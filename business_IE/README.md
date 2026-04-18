@@ -1,2 +1,0 @@
-# Claude
-Business & Industrial Economics
