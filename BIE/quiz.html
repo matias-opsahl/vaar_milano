@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>BIE Quiz - Business and Industrial Economics</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #f4f6f9; color: #222; padding: 20px; line-height: 1.5; }
+.container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+h1 { color: #0a3d62; margin-bottom: 8px; }
+h2 { color: #0a3d62; margin: 15px 0 10px; }
+.subtitle { color: #666; margin-bottom: 25px; }
+.topic-btn { display: block; width: 100%; text-align: left; padding: 14px 20px; margin: 8px 0; background: #e8f0fe; border: 2px solid transparent; border-radius: 8px; cursor: pointer; font-size: 15px; transition: all 0.2s; }
+.topic-btn:hover { background: #d0e1fc; border-color: #0a3d62; }
+.topic-btn.all { background: #ffe9c9; font-weight: bold; }
+.topic-btn.all:hover { background: #ffd9a0; }
+.question-box { padding: 20px; background: #fafbfc; border-radius: 8px; margin: 15px 0; border-left: 4px solid #0a3d62; }
+.q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+.q-num { color: #0a3d62; font-weight: bold; font-size: 14px; }
+.q-topic { color: #999; font-size: 13px; }
+.q-text { font-size: 16px; margin: 15px 0; white-space: pre-wrap; }
+.options { display: flex; flex-direction: column; gap: 10px; margin: 15px 0; }
+.option { padding: 12px 16px; background: white; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.option:hover { border-color: #0a3d62; background: #f0f7ff; }
+.option.selected { border-color: #0a3d62; background: #e8f0fe; }
+.option.correct { border-color: #2ecc71; background: #d4f4dc; }
+.option.wrong { border-color: #e74c3c; background: #fcd7d5; }
+.option.correct-reveal { border-color: #2ecc71; background: #e8f8ec; }
+textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 15px; resize: vertical; min-height: 100px; }
+textarea:focus { outline: none; border-color: #0a3d62; }
+.nav { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; flex-wrap: wrap; }
+button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s; }
+.btn-primary { background: #0a3d62; color: white; }
+.btn-primary:hover:not(:disabled) { background: #082a45; }
+.btn-secondary { background: #ddd; color: #333; }
+.btn-secondary:hover:not(:disabled) { background: #ccc; }
+.btn-submit { background: #27ae60; color: white; }
+.btn-submit:hover:not(:disabled) { background: #219653; }
+.btn-finish { background: #e67e22; color: white; }
+.btn-finish:hover:not(:disabled) { background: #ca6716; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.feedback { margin-top: 15px; padding: 15px; border-radius: 6px; white-space: pre-wrap; font-size: 14px; line-height: 1.6; }
+.feedback.correct { background: #e8f8ec; border-left: 4px solid #27ae60; }
+.feedback.wrong { background: #fcebea; border-left: 4px solid #e74c3c; }
+.feedback.text-answer { background: #fff7e6; border-left: 4px solid #e67e22; }
+.feedback-label { font-weight: bold; margin-bottom: 8px; display: block; }
+.source { font-style: italic; color: #555; margin-top: 10px; font-size: 13px; padding-top: 8px; border-top: 1px solid #ddd; }
+.progress { background: #eee; height: 8px; border-radius: 4px; margin: 15px 0; overflow: hidden; }
+.progress-bar { background: #0a3d62; height: 100%; transition: width 0.3s; }
+.score-box { text-align: center; padding: 30px; background: linear-gradient(135deg, #0a3d62, #1e6091); color: white; border-radius: 12px; margin: 20px 0; }
+.score-box h2 { color: white; font-size: 28px; }
+.score-big { font-size: 48px; font-weight: bold; margin: 15px 0; }
+.review-item { padding: 15px; margin: 10px 0; background: #fafbfc; border-radius: 6px; border-left: 4px solid #ccc; }
+.review-item.correct-r { border-left-color: #27ae60; }
+.review-item.wrong-r { border-left-color: #e74c3c; }
+.review-item.text-r { border-left-color: #e67e22; }
+.back-btn { margin-bottom: 15px; color: #0a3d62; background: none; padding: 5px 0; font-size: 14px; }
+.text-guidance { background: #fff3cd; padding: 10px 15px; border-radius: 6px; font-size: 13px; color: #856404; margin: 10px 0; }
+.q-type-badge { display: inline-block; padding: 3px 8px; background: #0a3d62; color: white; border-radius: 4px; font-size: 11px; margin-left: 8px; }
+.q-type-badge.calc { background: #8e44ad; }
+.q-type-badge.text { background: #e67e22; }
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+// ============================================================
+// QUESTION BANK - Organized by topic
+// ============================================================
+const QUESTIONS = {
+"2_CPA": {
+  title: "Lecture 2: Business, Government, Welfare & CPA",
+  questions: [
+    {type:"mc", q:"Hva er den korrekte definisjonen av Corporate Political Activity (CPA)?",
+      opts:["Handlinger firmaet gjør for å maksimere sitt bidrag til sosial velferd gjennom lovendringer","Aktiviteter firmaer iverksetter for å påvirke myndigheter og deres politikk på måter som er gunstige for dem","Offentlige reguleringer som begrenser bedrifters markedsmakt og påvirker profitt","Tiltak staten gjør for å sikre at bedrifter følger lovverket og konkurransepolitikken"],
+      correct:1, src:"Lecture 2, slide 24",
+      expl:"CPA er en ikke-markedsstrategi der firmaer påvirker politikere/offentlige funksjonærer for å forme offentlig politikk i retning som gagner dem. Den kan virke enten gjennom bedre informasjon til beslutningstakere eller gjennom insentiver (donasjoner, goder osv.). Det handler IKKE om sosial velferd eller statlig regulering - det er bedriftens strategiske handling rettet MOT staten."},
+    {type:"mc", q:"Hvilken av følgende er IKKE en typisk form for CPA-praksis nevnt i pensum?",
+      opts:["Lobbying gjennom bransjeforeninger eller egne avdelinger","Finansiering av universiteter, tenketanker og eksperter","Direkte markedskonkurranse gjennom prisreduksjoner","Revolving doors - bytte mellom offentlig og privat sektor"],
+      correct:2, src:"Lecture 2, slide 25-26",
+      expl:"Direkte priskonkurranse er en MARKEDSSTRATEGI, ikke en ikke-markedsstrategi som CPA. CPA omfatter informasjonsaktiviteter (media, tenketanker, eksperter), lobbying (direkte og indirekte), og insentiver (revolving doors, politiske donasjoner, gaver, trusler). Husk: CPA er rettet mot politikere/myndigheter, ikke konkurrenter."},
+    {type:"mc", q:"Hva menes med begrepet 'regulatory capture'?",
+      opts:["Når antitrust-myndigheter fanger opp ulovlige karteller gjennom kronvitner","Når beslutningstakere slutter å tjene allmennhetens interesse fordi de påvirkes for sterkt av spesialinteresser","Når staten tar over et monopolistisk foretak for å regulere det bedre","Når konkurrenter inngår formelle avtaler om prissetting og markedsdeling"],
+      correct:1, src:"Lecture 2, slide 24",
+      expl:"Regulatory capture er et synonym for CPA brukt med en negativ tone. Det refererer til når etablerte aktører (monopolister) og andre spesialinteressegrupper påvirker beslutningstakere i så stor grad at disse slutter å tjene allmennhetens interesse. Det er IKKE kartellsamarbeid (det er antitrust), IKKE statsovertakelse, og IKKE oppdagelse av karteller."},
+    {type:"mc", q:"Hvilke to betingelser må være oppfylt for at CPA skal være akseptabel i markedsøkonomier og demokratier?",
+      opts:["Effektivitet og økonomisk bærekraft","Gjennomsiktighet og ansvarlighet","Profittmaksimering og velferdsoptimering","Konkurranse og differensiering"],
+      correct:1, src:"Lecture 2, slide 27",
+      expl:"CPA (med unntak av bestikkelser og trusler som aldri er akseptable) er akseptabel hvis: (1) Gjennomsiktighet (transparency) - rettferdig informasjon om forretningsinteraksjoner med beslutningstakere, sikret gjennom lov/reguleringer (f.eks. lobbyregistre) eller sivilsamfunnspress (media, NGOer); og (2) Ansvarlighet (accountability) - politikere, beslutningstakere og forretningsfolk må stå til ansvar overfor offentligheten og institusjoner."},
+    {type:"mc", q:"Hvorfor kan offentlige politikker mot markedssvikt være utilstrekkelige?",
+      opts:["Fordi markeder alltid korrigerer seg selv uten statlig inngripen","På grunn av myndighetsfeil (informasjonsasymmetri, svake kompetanser) OG selvinteressert bedriftspåvirkning (CPA)","Fordi offentlige tjenestemenn alltid er fullt informert om industrien","Fordi markedssvikt aldri finnes i moderne økonomier"],
+      correct:1, src:"Lecture 2, slide 23",
+      expl:"To hovedgrunner: (1) Myndighetsfeil - beslutningstakere lider av informasjonsasymmetri og har ofte svake kompetanser om industri, innovasjon osv. (2) CPA - firmaer påvirker politikken til egen fordel. Dette betyr IKKE at markeder alltid korrigerer seg selv - markedssvikt finnes og trenger offentlig intervensjon, men intervensjonen kan selv svikte."},
+    {type:"mc", q:"Hva er sosial velferd (Social Welfare) som indikator i BIE-rammeverket?",
+      opts:["Statens samlede skatteinntekter fra bedrifter og husholdninger per år","En indikator for å måle verdien skapt av bedriften for seg selv og sine kunder (samlet økonomisk effektivitet)","Antallet arbeidsplasser en bedrift skaper i et lokalsamfunn","Summen av bedriftens CSR-investeringer og miljøtiltak i et gitt år"],
+      correct:1, src:"Lecture 2, slide 2",
+      expl:"Social Welfare i BIE-kurset er en indikator på den samlede økonomiske effektiviteten - verdien som skapes av bedriften for seg selv (produsentoverskudd) OG for kundene (konsumentoverskudd). Når bedrifter ikke klarer å skape tilstrekkelig effektivitet (markedssvikt), intervenerer staten gjennom offentlig politikk."},
+    {type:"mc", q:"Hvilken markedssvikt adresseres primært av antitrust-politikk?",
+      opts:["Naturlige monopoler og skaleøkonomi i infrastruktur","Miljøeksternaliteter og klimagassutslipp","Misbrukende markedsmakt og konkurransebegrensende atferd","Informasjonsasymmetri og adverse selection"],
+      correct:2, src:"Lecture 2 / Lecture 15",
+      expl:"Antitrust/konkurransepolitikk adresserer hovedsakelig 'abusive market power' - misbruk av dominerende stilling, konkurransebegrensende avtaler (karteller) og fusjonskontroll. Naturlig monopol håndteres av SOEs/regulering. Miljøeksternaliteter av miljøpolitikk. Informasjonsasymmetri av ulike markeds- og politikkløsninger."},
+    {type:"text", q:"Forklar kort forskjellen mellom 'Public policy toward business' og 'Corporate Political Activity (CPA)'. Inkluder retningen av påvirkningen.",
+      keywords:["public policy","CPA","government","business","influence","market failure","restore","favorable"],
+      src:"Lecture 2, slide 2-3",
+      expl:"Godt svar bør inneholde:\n\n• **Public policy toward business**: Myndighetenes intervensjon RETTET MOT bedrifter for å gjenopprette sosial velferd når markedet svikter. Retning: Stat → Bedrift.\n\n• **CPA (Corporate Political Activity)**: Bedriftens handlinger RETTET MOT myndighetene for å påvirke politikk og beskytte egen profitt. Retning: Bedrift → Stat.\n\nDe to er altså motsatte retninger av påvirkning i samme forhold. Public policy er korrigerende (reaktiv mot markedssvikt), mens CPA er strategisk (proaktiv for egen profitt)."},
+    {type:"mc", q:"Hvilken av disse er en 'informasjonsaktivitet' innenfor CPA?",
+      opts:["Direkte finansielle bidrag til politiske kampanjer og kandidater","Finansiering av tenketanker og eksperter som kan gi kunnskap om politiske spørsmål","Bestikkelser til offentlige tjenestemenn for å påvirke vedtak","Trusler mot beslutningstakere for å avstå fra bestemte vedtak"],
+      correct:1, src:"Lecture 2, slide 26",
+      expl:"Informasjonsaktiviteter innen CPA handler om å forme debatten gjennom kunnskap: media-tilstedeværelse, finansiering av universiteter/tenketanker/eksperter, deltakelse i rådgivende organer. Politiske bidrag og bestikkelser/trusler er 'insentiver' - en separat kategori."},
+    {type:"mc", q:"Hvorfor er CPA-regulering mer problematisk i kontekster med 'institutional void'?",
+      opts:["Fordi bedrifter ikke har ressurser til lobbying der","Fordi svake formelle og uformelle institusjoner gjør gjennomsiktighet og ansvarlighet vanskelig","Fordi det alltid er bedre konkurranse i slike markeder","Fordi staten er sterkere og mer regulerende i slike kontekster"],
+      correct:1, src:"Lecture 2, slide 27",
+      expl:"Institutional void refererer til svake formelle institusjoner (lover, reguleringer, rettssystem) og uformelle institusjoner (normer, tillit). Uten disse blir det vanskelig å sikre gjennomsiktighet og ansvarlighet. CPA kan da lettere degenerere til korrupsjon uten kontroll."},
+    {type:"mc", q:"Hvilken av disse handlingene er (nesten) universelt forbudt uansett CPA-kontekst?",
+      opts:["Deltakelse i åpne høringer og offentlige konsultasjonsprosesser","Finansiering av bransjeforeninger som driver lobbying","Bestikkelser og direkte trusler mot politikere","Finansielle bidrag til politiske partier innenfor lovlige rammer"],
+      correct:2, src:"Lecture 2, slide 27",
+      expl:"Bestikkelser og trusler er forbudt (nesten) overalt. Andre CPA-former er akseptable SÅ LENGE betingelsene om gjennomsiktighet og ansvarlighet er oppfylt - de er altså betinget akseptable, mens bestikkelser/trusler aldri er det."},
+    {type:"text", q:"Hva er forskjellen mellom direkte og indirekte lobbying? Gi ett eksempel på hver.",
+      keywords:["direct","indirect","government affairs","industry associations","lobbying firms","public relations"],
+      src:"Lecture 2, slide 26",
+      expl:"**Direkte lobbying**: Bedriften påvirker politikere direkte gjennom sine egne avdelinger (f.eks. government affairs-avdeling, PR-avdeling).\n\n**Indirekte lobbying**: Bedriften bruker mellomledd - bransjeforeninger, profesjonelle lobbyfirmaer, PR-byråer, advokatfirmaer.\n\nEksempel direkte: Googles eget 'Government Affairs'-team møter politikere.\nEksempel indirekte: Et bilselskap bruker ACEA (europeisk bransjeforening) for å påvirke EU-politikk."},
+    {type:"mc", q:"Hvilken markedssvikt kobles TYPISK til industriell og innovasjonspolitikk?",
+      opts:["Misbruk av markedsmakt gjennom rovprising","Miljøeksternaliteter ved produksjon","Markedssvikter som hindrer økonomisk vekst","Naturlige monopoler i infrastruktur"],
+      correct:2, src:"Lecture 2, slide 22",
+      expl:"Industriell og innovasjonspolitikk retter seg mot markedssvikter som hindrer økonomisk vekst (f.eks. underinvestering i FoU, koordineringssvikt, spillover-problemer). Misbruk av makt er antitrust. Miljøeksternaliteter er miljøpolitikk. Naturlig monopol er regulering/SOEs."},
+    {type:"mc", q:"Ved et 'revolving door'-scenario, hva er hovedbekymringen?",
+      opts:["At talent forlater offentlig sektor","At personer som bytter mellom offentlig og privat sektor kan utnytte sine forbindelser og insiderkunnskap","At statsansatte får for høye pensjoner","At private bedrifter ikke får nok erfarne ansatte"],
+      correct:1, src:"Lecture 2, slide 25",
+      expl:"Revolving door-bekymringen er at personer som veksler mellom offentlig og privat sektor kan skape interessekonflikter: de kan utnytte sine politiske forbindelser og innsideinformasjon for å tjene private interesser, eller love fremtidige jobber til offentlig ansatte som belønning for gunstige beslutninger."},
+    {type:"mc", q:"Hvilket av følgende er IKKE en del av BIE-rammeverket Business/Government/Market/Society?",
+      opts:["Myndighetenes regulering av monopoler","Bedriftens samhandling med sivilsamfunnsorganisasjoner","Forbrukerens individuelle nyttemaksimering i isolerte kjøpsbeslutninger","Bedriftens påvirkning på politikken gjennom CPA"],
+      correct:2, src:"Lecture 1",
+      expl:"BIE-rammeverket ser på Business i sammenheng med Market, Government, Natural Environment og Society. Individuell forbrukeratferd isolert er mer mikroøkonomi/marketing. Regulering, CSO-samhandling og CPA er alle sentrale i BIE-rammeverket."},
+  ]
+},
+"3_InfoAsym": {
+  title: "Lecture 3: Information Asymmetries",
+  questions: [
+    {type:"mc", q:"Hva er hovedforskjellen mellom adverse selection og moral hazard?",
+      opts:["Adverse selection handler om skjulte handlinger etter avtale, moral hazard om skjulte egenskaper før avtale","Adverse selection handler om skjulte egenskaper før transaksjonen (ex-ante), moral hazard om skjulte handlinger etter transaksjonen (ex-post)","Begge handler om samme problem men med ulike navn","Adverse selection gjelder forbrukere, moral hazard gjelder kun bedrifter"],
+      correct:1, src:"Lecture 3",
+      expl:"Adverse selection = hidden information = ex-ante asymmetri. En part kjenner ikke egenskapene til den andre FØR transaksjonen (f.eks. kvalitet på brukt bil).\n\nMoral hazard = hidden action = ex-post asymmetri. En part kan ikke observere den andres handlinger ETTER/UNDER transaksjonen (f.eks. hvor forsiktig en forsikret kunde er).\n\nBegge er informasjonsasymmetrier, men tidspunktet og problemets natur er forskjellig."},
+    {type:"mc", q:"I 'Market for Lemons'-modellen, hva skjer når kjøpere ikke kan verifisere kvalitet?",
+      opts:["Prisen går opp slik at bare plums selges i markedet","Kjøpere betaler forventet verdi, plums forsvinner fra markedet, kun lemons selges","Selgere avslører sannheten fordi det lønner seg for alle","Markedet fungerer perfekt siden 50/50-fordelingen løser asymmetri"],
+      correct:1, src:"Lecture 3, Market for lemons model",
+      expl:"Med 50/50 fordeling vil kjøperen være villig til å betale forventet verdi (EV) = 0.5×1200 + 0.5×2400 = $1,800. Men plum-eiere krever minst $2,000 for å selge. Bare lemon-eiere (som krever $1,000) vil selge. Over tid innser kjøpere at kun lemons tilbys, og prisen faller til mellom $1,000-$1,200. Plums drives ut av markedet - en klassisk markedssvikt."},
+    {type:"mc", q:"I lemons-modellen: hvilken minimumsandel q av plums må finnes i markedet for at plums skal fortsette å bli solgt?",
+      opts:["q ≥ 1/3","q ≥ 1/2","q ≥ 2/3","q ≥ 3/4"],
+      correct:2, src:"Lecture 3, Quality determination",
+      expl:"Betingelsen er: wtp = 1200(1-q) + 2400q ≥ 2000.\n\nLøser for q:\n1200 - 1200q + 2400q ≥ 2000\n1200 + 1200q ≥ 2000\n1200q ≥ 800\nq ≥ 2/3\n\nSå hvis minst 2/3 av kjøretøyene er plums, vil gjennomsnittlig forventet verdi være høy nok til at plum-eiere får solgt."},
+    {type:"mc", q:"Hvilket begrep beskriver BEST problemet til en forsikringskunde som blir mer uforsiktig ETTER å ha kjøpt forsikring?",
+      opts:["Adverse selection fordi kjøperen har skjult informasjon om sin risiko","Moral hazard fordi atferden endres når den ikke kan observeres","Signaling fordi kunden sender et signal om sin type","Screening fordi forsikringsselskapet velger kunder"],
+      correct:1, src:"Lecture 3, Moral hazard",
+      expl:"Dette er klassisk moral hazard - skjult handling etter transaksjonen. Kunden kjenner sin risiko fra før (det ville vært adverse selection), men det nye problemet er ATFERDSENDRINGEN som oppstår etter kjøpet, fordi forsikringsselskapet ikke kan observere hvor forsiktig kunden oppfører seg."},
+    {type:"mc", q:"Hva er hovedegenskapen til et effektivt signal i en signaling-modell?",
+      opts:["Det må være gratis å sende slik at alle kan signalisere likt","Det må være observerbart, og mer kostbart for dem med dårligere skjulte egenskaper","Det må være usynlig for mottakeren","Det må være påkrevd ved lov"],
+      correct:1, src:"Lecture 3, Signaling",
+      expl:"Et troverdig signal må være: (1) Observerbart, (2) Kostbart - ellers er det 'cheap talk', (3) Differensielt kostbart - mer kostbart for typer med dårligere egenskaper. Bare da skiller signalet seg, ved at kun høykvalitets-typer finner det lønnsomt å signalisere."},
+    {type:"mc", q:"Hvilken av disse er et eksempel på screening?",
+      opts:["Selger gir garanti på produktet","Forsikringsselskap utfører medisinske undersøkelser og spørreskjemaer","Staten innfører merkingsregler","Universiteter gir vitnemål etter eksamen"],
+      correct:1, src:"Lecture 3, Adverse selection remedies",
+      expl:"Screening = den MINDRE informerte parten prøver å skille mellom typer (her: forsikringsselskapet prøver å finne risikoen til kundene) gjennom verifikasjoner, medisinske undersøkelser, spørreskjemaer osv.\n\nSignaling = den MER informerte parten avslører sin type (garanti fra selger, vitnemål fra student)."},
+    {type:"text", q:"Forklar hvorfor restauranter i turistområder er spesielt utsatt for adverse selection. Nevn minst ett remedie.",
+      keywords:["tourist","repeat","one-time","quality","reviews","reputation","word-of-mouth"],
+      src:"Lecture 3, Adverse selection examples and remedies",
+      expl:"**Problemet**: Turister er som regel engangskunder. Dette fjerner den viktigste disiplineringsmekanismen (repeat business/reputasjon). Restauranten har insentiv til å selge lav kvalitet (lemon) til høy pris fordi kunden ikke oppdager problemet før etter måltidet, og kan ikke straffe restauranten.\n\n**Remedies**: (1) Media-anmeldelser og profesjonelle kritikere; (2) Online reviews (Tripadvisor); (3) Reputasjonsbygging gjennom Michelin-stjerner; (4) Tilknytning til kjente kjeder."},
+    {type:"mc", q:"Hva er IKKE et typisk eksempel på hidden information (adverse selection)?",
+      opts:["Kvaliteten på en brukt bil som selgeren kjenner bedre enn kjøperen","En leder som slakker av på jobb når ingen observerer ham","Helsetilstanden til en forsikringskunde","Kostnadene til en sittende bedrift som en potensiell entrant ikke kan observere"],
+      correct:1, src:"Lecture 3",
+      expl:"En leder som slakker av (hidden action/ex-post) er MORAL HAZARD - et klassisk agency-problem. De tre andre er alle eksempler på adverse selection: egenskaper som eksisterer før transaksjonen, skjult for den ene parten."},
+    {type:"mc", q:"Hvilken løsning er mest passende for moral hazard-problemer?",
+      opts:["Signalering gjennom garantier og sertifiseringer","Insentivjustering - f.eks. kontrakter som binder belønning til observerbare utfall","Mer informasjon via merkingsregler","Pooling-strategier"],
+      correct:1, src:"Lecture 3, Moral hazard",
+      expl:"Hovedløsningen for moral hazard er incentive alignment - få agentens insentiver til å matche prinsipalens gjennom kontrakter som belønner observerbare resultater. Eksempel: Resultatbonus, aksjer til ledelse, egenandel i forsikring.\n\nSignaling, merking og pooling er alle tiltak mot ADVERSE SELECTION."},
+    {type:"mc", q:"I eksamensoppgaven om 'consumers of live entertainment', hva var korrekte svar?",
+      opts:["Hovedproblemet er moral hazard, løses ved at non-profit organisasjoner arrangerer","Hovedproblemet er adverse selection, kan mitigeres gjennom anmeldelser fra profesjonelle kritikere","Hovedproblemet er moral hazard, løses ved å tilby venuene en andel av billettinntekter","Hovedproblemet er adverse selection, kan mitigeres ved statlig makt til å beskatte"],
+      correct:1, src:"BIE_MS_Forms_9_September_2020 - Solution",
+      expl:"Ved kjøp av billett vet ikke kunden på forhånd om konserten/forestillingen vil være god (adverse selection om kvalitet). Dette er et ex-ante problem som løses gjennom signalering i form av anmeldelser fra profesjonelle kritikere. Staten kan ikke løse adverse selection gjennom skatter."},
+    {type:"mc", q:"Hvilket av følgende markeder har IKKE et klassisk adverse selection-problem?",
+      opts:["Bruktbilmarkedet","Helseforsikring","Aksjemarkedet med offentlig informasjon og løpende kursoppdatering","Kapitalmarkedet for innovative startups"],
+      correct:2, src:"Lecture 3, Examples",
+      expl:"Et velfungerende aksjemarked med offentlig informasjon har mye mindre adverse selection fordi prisene reflekterer all offentlig tilgjengelig informasjon. De andre er klassiske adverse selection-eksempler."},
+    {type:"text", q:"Hvilke 3 hovedtyper løsninger finnes for adverse selection (ifølge pensum)?",
+      keywords:["information","signaling","policy","warranties","labeling","reputation","disclosure","screening"],
+      src:"Lecture 3, Adverse selection Remedies",
+      expl:"Pensum skiller mellom to hovedkategorier:\n\n**1. Fjerne/redusere asymmetrien per se**:\n• Policy-løsninger: Merkingsregler, offentliggjøringskrav\n• Forretningsløsninger: Screening, bruk av data/ML, pooling\n\n**2. Tilby signaler**:\n• Produktmarkeder: Garantier, sertifiseringer\n• Arbeidsmarked/forsikring: Track record, reputasjon, tilknytning til troverdige aktører\n\nGodt svar nevner: at både den informerte parten (signaling) og mindre informerte (screening/policy) kan bidra."},
+    {type:"mc", q:"Hvorfor er agency-problemer i manager-drevne bedrifter typisk moral hazard?",
+      opts:["Fordi managers har bedre informasjon om seg selv","Fordi det er vanskelig og kostbart for eiere å monitorere managers' handlinger","Fordi managers gir signaler gjennom utdanning","Fordi managers kjøpes via markedsprosess"],
+      correct:1, src:"Lecture 3, Moral hazard",
+      expl:"Agency-problemet oppstår fordi eiere (prinsipaler) ikke kan fullt observere hva manageren (agenten) faktisk gjør. Dette er klassisk hidden action/ex-post asymmetri = moral hazard. Løsning: insentivkontrakter (bonus, aksjer) som kobler belønning til observerbare resultater."},
+    {type:"mc", q:"Hvilken av disse er IKKE en mulig konsekvens av informasjonsasymmetri?",
+      opts:["Høykvalitetsaktører drives ut av markedet","Opportunistisk atferd av den bedre informerte parten","Perfekt prisdifferensiering hvor hver kunde betaler sin WTP","Ineffektiv ressursallokering"],
+      correct:2, src:"Lecture 3",
+      expl:"Perfekt prisdiskriminering krever FULL informasjon om hver kundes betalingsvillighet - altså det motsatte av informasjonsasymmetri. De andre tre er alle konsekvenser av asymmetri."},
+    {type:"mc", q:"Hvilke kjennetegn på inkumbenten kan være gjenstand for adverse selection fra en entrants perspektiv?",
+      opts:["Markedsandel og geografisk tilstedeværelse","Kostnadsstruktur og konkurranseevne","Produktdesign og logoer","Ansattes antall og kontorstørrelse"],
+      correct:1, src:"Lecture 3 + Lecture 8",
+      expl:"Entrants kan ikke observere inkumbentens kostnadsnivå direkte - dette er skjult informasjon. En lavkostnadsinkumbent kan true med priskrig, men entranten vet ikke om dette er reell eller bløffet trussel. Dette er grunnlaget for signaling-modellen for strategic entry barriers (limit pricing)."},
+  ]
+},
+"4_Sustainability": {
+  title: "Lecture 4: Natural Environment & Stakeholders",
+  questions: [
+    {type:"mc", q:"Hva er definisjonen av 'stakeholder' i pensum?",
+      opts:["Bare de som eier aksjer i selskapet","Alle parter som har en interesse i firmaet, eller som firmaet har en interesse i","Ansatte og ledelse i selskapet","Offentlige myndigheter som regulerer selskapet"],
+      correct:1, src:"Lecture 4, slide 18",
+      expl:"Stakeholder-definisjonen er bred: alle parter som har en interesse i firmaet ELLER som firmaet har interesse i. De kan bli påvirket av bedriftens aktiviteter, eller selv påvirke bedriftens aktiviteter og prestasjoner."},
+    {type:"mc", q:"Hvilken gruppe er et eksempel på primære stakeholders?",
+      opts:["Lokalsamfunn og fremtidige generasjoner","Media og sivilsamfunnsorganisasjoner","Kunder, leverandører, ansatte og banker","Miljø og biologisk mangfold"],
+      correct:2, src:"Lecture 4, slide 22",
+      expl:"**Primære stakeholders**: Knyttet til bedriften gjennom ØKONOMISKE TRANSAKSJONER. Eksempler: kunder (inntekter), leverandører (materialer), ansatte (arbeidskraft mot lønn), banker (kreditt mot rente).\n\n**Sekundære stakeholders**: Knyttet gjennom ikke-økonomiske koblinger. Eksempler: myndigheter, sivilsamfunn, lokalsamfunn, media, miljø."},
+    {type:"mc", q:"Hva skiller INTERNE fra EKSTERNE stakeholders?",
+      opts:["Interne er i hjemlandet, eksterne er i utlandet","Interne interagerer direkte innad i selskapet, eksterne er utenfor selskapet men blir påvirket","Interne er frivillig tilknyttet, eksterne er tvunget","Interne har juridisk beskyttelse, eksterne har ikke"],
+      correct:1, src:"Lecture 4, slide 21",
+      expl:"**Interne**: Individer/grupper som interagerer direkte INNENFOR selskapet (ansatte, ledere, eiere).\n\n**Eksterne**: Individer/grupper UTENFOR selskapet som blir påvirket av dets beslutninger (kunder, leverandører, investorer, myndigheter, lokalsamfunn, konkurrenter, media)."},
+    {type:"mc", q:"Hvilken av disse blir som regel klassifisert som en sekundær, ekstern stakeholder?",
+      opts:["Ansatte i produksjonsavdelingen","Lokalsamfunnet rundt fabrikken","Kunder som kjøper firmaets produkter","Aksjonærer som eier en andel av selskapet"],
+      correct:1, src:"Lecture 4, slide 20",
+      expl:"Lokalsamfunn er eksternt (utenfor selskapets formelle grenser) og sekundært (knyttet gjennom institusjoner/ikke-økonomiske bånd). De blir påvirket av f.eks. utslipp, men har ingen direkte økonomisk avtale med selskapet."},
+    {type:"text", q:"Forklar kort hvorfor miljøet regnes som en stakeholder i BIE-rammeverket.",
+      keywords:["future","generations","ecosystem","biodiversity","natural resources","quality","affect","represent"],
+      src:"Lecture 4, slide 22",
+      expl:"Miljøet er en sekundær ekstern stakeholder fordi:\n\n• Nåværende og fremtidige generasjoner er avhengige av kvaliteten på naturlige økosystemer og tilgjengeligheten av naturressurser.\n\n• Disse kan bli truet av bedriftens produksjonsprosesser (utslipp, ressursuttak).\n\n• Miljøet kan ikke 'snakke for seg selv', så det representeres gjennom sivilsamfunnsorganisasjoner, myndigheter og fremtidige generasjoner.\n\n• Tilknytningen er gjennom institusjonelle/ikke-økonomiske bånd."},
+    {type:"mc", q:"Hvilken av disse er IKKE et typisk kjennetegn ved sustainable development?",
+      opts:["Tilfredsstiller nåværende behov uten å gå på bekostning av fremtidige generasjoners behov","Integrerer økonomiske, sosiale og miljømessige dimensjoner","Fokuserer utelukkende på kortsiktig profittmaksimering","Krever samhandling med ulike typer stakeholders"],
+      correct:2, src:"Lecture 4, Sustainable Development",
+      expl:"Sustainable development er per definisjon motpolen til kortsiktig profittmaksimering. Det handler om å balansere behov på tvers av generasjoner og integrere økonomi, miljø og samfunn."},
+    {type:"mc", q:"Hvorfor er det sentralt for bedrifter å identifisere og håndtere stakeholders?",
+      opts:["Fordi loven krever at alle stakeholders har like stemmeretter","Fordi stakeholders påvirker og blir påvirket av bedriften, og relasjonene må forvaltes","Fordi stakeholders alltid er eiere i juridisk forstand","Fordi det reduserer skatten bedriften må betale"],
+      correct:1, src:"Lecture 4, slide 18",
+      expl:"Bedrifter må identifisere stakeholders, deres behov og forventninger, skape dialog og forvalte relasjonene - fordi stakeholders både påvirker firmaets operasjoner og resultater og blir påvirket av dem."},
+    {type:"mc", q:"En konkurrent regnes som hva slags stakeholder?",
+      opts:["Intern primær stakeholder","Ekstern sekundær stakeholder","Ekstern primær stakeholder","Ingen av delene - konkurrenter er ikke stakeholders"],
+      correct:1, src:"Lecture 4, slide 21",
+      expl:"Pensum nevner konkurrenter blant eksterne stakeholders. De påvirker indirekte gjennom markedstrender og konkurransedynamikk. De har ikke en direkte økonomisk transaksjon med firmaet, så de plasseres som sekundære eksterne."},
+    {type:"mc", q:"Hva er den KORREKTE påstanden om ansatte som stakeholders?",
+      opts:["Ansatte er sekundære stakeholders","Ansatte er interne primære stakeholders som bidrar med arbeidskraft mot betaling","Ansatte er eksterne sekundære","Ansatte er ikke stakeholders"],
+      correct:1, src:"Lecture 4, slide 20-22",
+      expl:"Ansatte er interne (de jobber direkte i selskapet) og primære (økonomisk transaksjon: arbeidskraft mot lønn). De er blant de viktigste stakeholdergruppene."},
+    {type:"mc", q:"Hvorfor kan en bedrift ha interesse i å behandle leverandører som stakeholders?",
+      opts:["Fordi loven krever formelle partnerskap","Fordi leverandørrelasjoner ofte involverer relation-specific investments og langsiktig samarbeid","Fordi leverandører alltid får lavere priser","Fordi leverandører har stemmerett på generalforsamlingen"],
+      correct:1, src:"Lecture 4 + Lecture 9 (TCE)",
+      expl:"Leverandører er primære eksterne stakeholders. Mange leverandørrelasjoner involverer spesifikke investeringer, læringseffekter, og langsiktige kontrakter. Å behandle dem som ren motpart kan skape opportunisme og underinvestering."},
+    {type:"mc", q:"Hvilken av disse representerer et klassisk stakeholder-konflikt scenario?",
+      opts:["Kunder ønsker høyere priser, aksjonærer ønsker lavere profitt","Ansatte ønsker lavere lønn, eiere ønsker høyere lønnskostnader","Aksjonærer ønsker høy kortsiktig utbytte, lokalsamfunn ønsker miljøinvesteringer","Myndigheter ønsker mindre regulering, bedriften ønsker mer regulering"],
+      correct:2, src:"Lecture 4",
+      expl:"Dette er en typisk stakeholder-konflikt: aksjonærer presser for utbytte; lokalsamfunn vil ha investeringer i miljøtiltak som reduserer utbytte. God stakeholder-håndtering krever avveining og dialog."},
+    {type:"mc", q:"Hvilken av disse EKSTERNE gruppene er representanter for miljøet og fremtidige generasjoner?",
+      opts:["Aksjonærer og investorer","Sivilsamfunnsorganisasjoner og myndigheter","Konkurrenter og bransjeforeninger","Kunder og leverandører"],
+      correct:1, src:"Lecture 4, slide 22",
+      expl:"Siden miljøet og fremtidige generasjoner ikke kan 'snakke for seg selv', representeres de gjennom: myndigheter og sivilsamfunnsorganisasjoner/NGO-er/media som utøver press for å beskytte miljø og framtidige interesser."},
+    {type:"mc", q:"Hvilken av disse er et eksempel på at stakeholders BÅDE påvirker og blir påvirket av bedriften?",
+      opts:["Media som kun observerer bedriften","Lokalsamfunn som bidrar med arbeidskraft og blir påvirket av miljøbelastning","Regjeringen som kun samler statistikk","Forbrukere som kun kjøper uten å bry seg"],
+      correct:1, src:"Lecture 4, slide 22",
+      expl:"Lokalsamfunn påvirker bedriften gjennom tilbud av arbeidskraft og menneskelig kapital, og blir påvirket (positivt: arbeidsplasser; negativt: miljøbelastning). Dette toveis-forholdet er kjernen i stakeholder-begrepet."},
+    {type:"mc", q:"Hvorfor kan det å se bedrifter kun gjennom en aksjonær-linse være problematisk?",
+      opts:["Fordi aksjonærer alltid har feil preferanser","Fordi det overser påvirkningen bedriften har på og fra andre stakeholders og natursystemer","Fordi aksjonærene alltid krever maksimal profitt","Fordi aksjonærene ikke har juridiske rettigheter"],
+      correct:1, src:"Lecture 4",
+      expl:"En ren aksjonær-linse (shareholder theory) ignorerer at bedrifter opererer i et komplekst nettverk av relasjoner. De påvirker og blir påvirket av mange parter. Å overse dette kan føre til kortsiktige valg som undergraver bærekraft og legitimitet."},
+    {type:"text", q:"Forklar kort forskjellen mellom primære og sekundære stakeholders, og gi ett eksempel på hver.",
+      keywords:["economic","transactions","institutions","primary","secondary","non-economic"],
+      src:"Lecture 4, slide 22",
+      expl:"**Primære stakeholders**: Knyttet til bedriften gjennom DIREKTE ØKONOMISKE TRANSAKSJONER.\n• Eksempler: Kunder, leverandører, ansatte, banker.\n\n**Sekundære stakeholders**: Knyttet gjennom IKKE-ØKONOMISKE bånd - formelle og uformelle institusjoner, regulering, sosialt press.\n• Eksempler: Myndigheter, lokalsamfunn, media, miljø/framtidige generasjoner.\n\nBåde primære og sekundære kan være kritiske for bedriftens legitimitet og langsiktige suksess."},
+  ]
+},
+"5_PriceDiscrim": {
+  title: "Lecture 5: Price Discrimination",
+  questions: [
+    {type:"mc", q:"Hvilken grunnbetingelse er en forutsetning for å gjennomføre prisdiskriminering?",
+      opts:["Perfekt konkurranse slik at alle priser er like MC","Fravær av arbitrage, slik at kunder ikke kan kjøpe billig og selge dyrt videre","Homogene produkter uten differensiering","Full likhet i betalingsvillighet blant alle kundene"],
+      correct:1, src:"Lecture 5, Keywords slide 42",
+      expl:"Fravær av arbitrage er kritisk: hvis kunder kan kjøpe varen billig og videreselge til høyere pris, brytes prisdiskrimineringen ned. Prisdiskriminering krever også MARKEDSMAKT (ikke perfekt konkurranse) og forskjeller i betalingsvillighet."},
+    {type:"mc", q:"Hva kjennetegner Perfect Price Discrimination (PPD / first degree)?",
+      opts:["Samme pris for alle kunder","Firmaet setter ulik pris for hver kunde lik deres betalingsvillighet (WTP)","Firmaet deler markedet i 2-3 grupper med fast pris per gruppe","Firmaet tilbyr ulike versjoner og lar kundene velge selv"],
+      correct:1, src:"Lecture 5, slide 15",
+      expl:"PPD = 1st degree: firmaet klarer å ta ut hele konsumentoverskuddet ved å sette en unik pris for hver kunde lik deres WTP. Sjeldent i praksis. De andre er GPD (3rd) og PDSS (2nd)."},
+    {type:"mc", q:"Hva er kjennetegnet ved Group Price Discrimination (GPD / third degree)?",
+      opts:["Hver kunde betaler sin individuelle WTP","Firmaet deler markedet i OBSERVERBARE grupper og setter ulik pris per gruppe","Firmaet kjenner ikke kundenes type","Alle kunder betaler monopolprisen"],
+      correct:1, src:"Lecture 5, slide 26",
+      expl:"GPD krever at firmaet kan OBSERVERE karakteristika: alder, nasjonalitet, lokasjon, yrke osv. Firmaet setter monopolpris i hvert segment. Høyere pris i segmenter med LAVERE elastisitet."},
+    {type:"mc", q:"Hva er kjennetegnet ved Price Discrimination by Self-Selection (PDSS)?",
+      opts:["Firmaet observerer kundetype direkte","Firmaet kan IKKE observere kundetype, tilbyr ulike versjoner og lar kundene velge","Firmaet setter samme pris men begrenser kvantum","Firmaet bruker auksjoner"],
+      correct:1, src:"Lecture 5, slide 31",
+      expl:"PDSS (2nd degree) brukes når firmaet lider av INFORMASJONSASYMMETRI. Løsningen er å tilby ulike VERSJONER og la kundene selvselektere. Krever participation constraint og incentive compatibility constraint."},
+    {type:"calc", q:"Regneoppgave (PPD vs. monopol):\n\nEn monopolist har etterspørsel Q = 120 − 2p og marginal kostnad MC = 40.\n\nBeregn produsentoverskudd (vπ), konsumentoverskudd (CS) og social welfare (W) i:\n(a) single-price monopolist\n(b) perfect price discrimination",
+      src:"Exercise 1 - Price Discrimination",
+      expl:"**Formler fra pensum:**\n• Invers etterspørsel: p = 60 − 0.5q (fra Q = 120 − 2p)\n• Monopol: MR = MC gir optimal Q\n• PPD: selger til p = MC\n• CS = triangel over prislinjen under etterspørselskurven\n\n**STEG 1 — Single-price monopol (a):**\nFra Q = 120 − 2p får vi p = 60 − 0.5q\nR = p·q = 60q − 0.5q²\nMR = 60 − q\nSett MR = MC: 60 − q = 40 → **q_M = 20**\nPris: p_M = 60 − 0.5(20) = **50**\nvπ: (50−40)·20 = **200**\nCS: ½·(60−50)·20 = **100**\nW_M = 200 + 100 = **300**\n\n**STEG 2 — Perfect Price Discrimination (b):**\n60 − 0.5q = 40 → **q_PPD = 40**\nCS_PPD = 0 (alle betaler WTP)\nvπ_PPD = ½·(60−40)·40 = **400**\nW_PPD = **400**\n\n**Fasit:**\n(a) q=20, p=50, vπ=200, CS=100, W=300\n(b) q=40, vπ=400, CS=0, W=400\n\nPPD gir høyere velferd (400>300), men hele overskuddet går til produsenten."},
+    {type:"calc", q:"Regneoppgave (GPD):\n\nMonopolist i to markeder:\nQ1 = 100 − p1\nQ2 = 100 − 2p2\nMC = 20\n\n(a) Pris og kvantum i hvert marked under GPD?\n(b) Hvilken uniform pris hvis lik pris i begge?",
+      src:"Exercise 2 - Price Discrimination",
+      expl:"**Formler:**\n• Invers: p_i = p_i(Q_i)\n• Per marked: MR_i = MC\n\n**STEG 1 — Invers demand:**\np1 = 100 − Q1\np2 = 50 − 0.5Q2\n\n**STEG 2 — GPD:**\n*Marked 1:* R1 = (100−Q1)Q1, MR1 = 100−2Q1\n100−2Q1 = 20 → **Q1 = 40, p1 = 60**\n\n*Marked 2:* R2 = (50−0.5Q2)Q2, MR2 = 50−Q2\n50−Q2 = 20 → **Q2 = 30, p2 = 35**\n\n**STEG 3 — Uniform:**\nQ = Q1+Q2 = 200−3p\np = 200/3 − Q/3\nMR = 200/3 − (2/3)Q\nSett = 20: (2/3)Q = 140/3 → **Q = 70**\np = 200/3 − 70/3 = **130/3 ≈ 43.33**\n\n**Fasit:**\n(a) p1=60/Q1=40 | p2=35/Q2=30\n(b) p≈43.33, Q=70\n\nI mer elastisk marked (Q2) er prisen lavere."},
+    {type:"mc", q:"I GPD-modellen: hvordan relaterer prismarkup seg til priselastisitet?",
+      opts:["Høyere elastisitet → høyere markup og pris","Lavere elastisitet → høyere markup og pris","Elastisitet påvirker ikke markup","Markup avhenger kun av MC"],
+      correct:1, src:"Lecture 5, slide 23",
+      expl:"Fra first-order condition: (p − MC)/p = 1/|ε|\n\nJo mer RIGID etterspørselen er (lav elastisitet), desto høyere markup. Intuitivt: når kundene er lidenskapelige/lite prisfølsomme, kan firmaet sette høyere pris uten å miste dem."},
+    {type:"calc", q:"Regneoppgave (PDSS / Versioning):\n\nTuristresort, to segmenter:\n- Høy (H): 1,000 personer. WTP(N)=1500 €/uke. WTP(B)=800.\n- Lav (L): 2,000 personer. WTP(N)=600. WTP(B)=500.\n\nMC = 300 €/uke begge versjoner.\n\nEr prisdiskriminering lønnsomt? Optimal policy?",
+      src:"Exercise 3 - Price Discrimination",
+      expl:"**PDSS** siden typer ikke observerbart.\n\n**Formler:**\n• p_L = wtp(L,L)\n• p_H = min{wtp(H,H); p_L + (wtp(H,H) − wtp(H,L))}\n\n**STEG 1 — Uten versjonering:**\n*1a: p_N=1500*: Kun H. Profitt=(1500−300)·1000=**1.200.000**\n*1b: p_N=600*: Alle. Profitt=(600−300)·3000=**900.000**\n*1c: p_B=800*: Kun H. Profitt=(800−300)·1000=**500.000**\n*1d: p_B=500*: Alle. Profitt=(500−300)·3000=**600.000**\nBest: **1.200.000 €**\n\n**STEG 2 — Versjonering (PDSS):**\nPris for B (låser L): p_B = WTP(L,B) = **500 €**\nPris for N (IC for H):\n- Ekstrem: WTP(H,N) = 1500\n- Mild: 500 + (1500−800) = **1200**\np_N = min(1500, 1200) = **1200 €**\n\nProfitt_H = (1200−300)·1000 = 900.000\nProfitt_L = (500−300)·2000 = 400.000\n**Total = 1.300.000 €**\n\n**Fasit**: Versjonering lønnsomt (1.300.000 > 1.200.000). Gevinst: 100.000 €.\nOptimal: p_N=1200, p_B=500."},
+    {type:"mc", q:"Hva er 'participation constraint' i PDSS?",
+      opts:["Bedriften tjener penger på hver enhet","Hver kundetype får positiv nytte av å kjøpe sin versjon","Konkurrenter kan ikke kopiere strategien","Arbitrage hindres mellom segmenter"],
+      correct:1, src:"Lecture 5, slide 34-35",
+      expl:"Participation constraint: hver kundetype må oppnå minst like god nytte av å kjøpe som av ikke å kjøpe. For lav-type: WTP(L,L) − p_L ≥ 0. For høy-type: WTP(H,H) − p_H ≥ 0."},
+    {type:"mc", q:"Hva er 'incentive compatibility constraint' i PDSS?",
+      opts:["At begge typer deltar","At hver kundetype foretrekker sin tiltenkte versjon fremfor den andre","At bedriften ikke går konkurs","At MC er lavere enn pris for begge"],
+      correct:1, src:"Lecture 5, slide 35",
+      expl:"IC sikrer self-selection: at høy-type velger høy-versjonen og lav-type velger lav-versjonen. Kritisk for H-type: WTP(H,H) − p_H ≥ WTP(H,L) − p_L. Derfor: p_H = min{WTP(H,H); p_L + (WTP(H,H) − WTP(H,L))}."},
+    {type:"mc", q:"I GPD hvor elastisiteten er høyest i gruppe X og lavest i Y, hvilket prismønster forventes?",
+      opts:["p_X > p_Y fordi X er mer elastisk","p_Y > p_X fordi Y er mindre elastisk","p_X = p_Y fordi arbitrage utjevner","p = MC i begge markeder"],
+      correct:1, src:"Lecture 5, slide 23",
+      expl:"I GPD settes høyere pris i segmenter med LAVERE elastisitet. Hvis Y har lavere elastisitet, så er 1/|ε_Y| > 1/|ε_X|, dermed p_Y > p_X."},
+    {type:"mc", q:"Hva er 'product damage practices' i prisdiskriminering?",
+      opts:["Firmaet ødelegger konkurrenters produkter","Firmaet lager en bevisst dårligere versjon for å støtte PDSS","Produktet blir ødelagt under transport","Firmaet trekker produkter tilbake"],
+      correct:1, src:"Lecture 5, keywords",
+      expl:"Product damage = bevisst å lage en 'dårligere' versjon ved å strippe funksjoner. Formålet: få H-type til å VELGE høy-versjonen (IC-betingelse). Eksempel: programvare med funksjoner deaktivert, flyselskap med R-restricted vs NR-billetter."},
+    {type:"mc", q:"Hvilken PD krever MINST informasjon om individuelle kunder?",
+      opts:["PPD","GPD","PDSS","Uniform monopolpris"],
+      correct:2, src:"Lecture 5",
+      expl:"PPD krever MEST (individuell WTP). GPD krever OBSERVERBARE grupper. PDSS krever MINST om individer - bedriften vet bare at det finnes ulike typer. Kundene selvselekterer og avslører sin type."},
+    {type:"text", q:"Hvorfor er 'absence of arbitrage' en forutsetning for PD? Gi ett eksempel på et marked der betingelsen er oppfylt.",
+      keywords:["arbitrage","resale","service","geographic","personal","identifiable","transport"],
+      src:"Lecture 5, slide 42",
+      expl:"**Hvorfor**: Hvis kunder i lav-pris-segmentet kan videreselge til høy-pris-kunder, kollapser PD.\n\n**Eksempler der PD fungerer**:\n• **Tjenester**: Kan ikke videreselges (frisørtime, fly med navnebillett).\n• **Geografisk**: Medisin billig i fattige land; transportkostnader hindrer arbitrage.\n• **Personlig ID**: Studentrabatter krever studentkort.\n• **Versjoner**: Student-software, turist-menyer.\n\nBryter PD: fysiske varer som kan transporteres, digitale kopier uten DRM."},
+    {type:"mc", q:"Hvilken PD er typisk for restaurant med billig lunsj-meny og dyrere à la carte middag?",
+      opts:["PPD","GPD hvis restauranten skiller lunsj/middagsgjester","PDSS hvor kundene velger mellom versjoner","Uniform prising"],
+      correct:2, src:"Lecture 5, slide 31",
+      expl:"PDSS (2nd) fordi restauranten ikke observerer kundetype, men tilbyr to VERSJONER (enklere lunsj, utvidet middag). Kundene selvselekterer basert på preferanser/WTP. Hvis rabatt til pensjonister (observerbar gruppe), ville det vært GPD."},
+  ]
+},
+"6_Oligopoly": {
+  title: "Lecture 6: Oligopolistic Markets",
+  questions: [
+    {type:"mc", q:"Hva er hoveddefinisjonen av oligopol?",
+      opts:["Én enkelt tilbyder med mange kjøpere","Svært mange små atomistiske firmaer","Et BEGRENSET antall firmaer konkurrerer, hver påvirkes av andres handlinger","Ingen strategisk interaksjon mellom aktørene"],
+      correct:2, src:"Lecture 6",
+      expl:"Oligopol ligger mellom monopol (N=1) og perfekt konkurranse (N→∞). Hovedtrekk: BEGRENSET antall firmaer konkurrerer, markedsresultat påvirkes av rivalene → **strategisk interavhengighet**."},
+    {type:"mc", q:"I Cournot-modellen, hva er strategisk variabel?",
+      opts:["Pris simultant","Kvantum/output simultant","Markedsandel","Reklamebudsjett"],
+      correct:1, src:"Lecture 6 - Cournot",
+      expl:"Cournot: SIMULTANE beslutninger om KVANTUM\nBertrand: SIMULTANE beslutninger om PRIS\nStackelberg: SEKVENSIELLE kvantumsbeslutninger"},
+    {type:"mc", q:"Hva er Cournot-Nash-likevekt?",
+      opts:["Firmaene samarbeider","Hvert firma maksimerer profitt gitt andres kvantum fast; ingen vil avvike unilateralt","Pris = MC","Leder-følger med observasjon"],
+      correct:1, src:"Lecture 6",
+      expl:"I en Cournot-Nash-likevekt produserer begge firmaer et nivå slik at INGEN har insentiv til å endre sitt output ENSIDIG. Skjæringspunkt mellom de to reaksjonsfunksjonene."},
+    {type:"calc", q:"Regneoppgave (Cournot symmetrisk):\n\nTo firmaer, MC1=MC2=25, P=100−Q.\n\n(a) Reaksjonsfunksjoner.\n(b) Likevektspris, kvantum, profitt.\n(c) Sammenlign med p.k. og monopol.",
+      src:"Exercise 1 - Oligopolistic markets",
+      expl:"**Formler:**\n• π_i = (a−b·Q)·q_i − c·q_i\n• Reaksjonsfunksjon: q_i = (a−c)/(2b) − q_j/2\n• Symmetrisk: q_i = (a−c)/(3b)\n\n**STEG 1 — Reaksjonsfunksjoner:**\nπ1 = (100−q1−q2)q1 − 25q1\ndπ1/dq1 = 100 − 2q1 − q2 − 25 = 0\n**q1 = 37.5 − q2/2**\n**q2 = 37.5 − q1/2**\n\n**STEG 2 — Likevekt:**\nq1 = 37.5 − (37.5−q1/2)/2 = 18.75 + q1/4\n(3/4)q1 = 18.75 → **q1 = q2 = 25**\nQ = 50, P = 100−50 = **50**\nπ = (50−25)·25 = **625** per firma\n\n**STEG 3 — Sammenligning:**\n*P.k.: p=MC*: 25 = 100−Q → Q=75, P=25, π=0\n*Monopol: MR=MC*: 100−2Q=25 → Q=37.5, P=62.5, π=1406.25\n\n**Fasit:**\n• Cournot: P=50, Q=50, π=625 hver\n• P.k.: P=25, Q=75, π=0\n• Monopol: P=62.5, Q=37.5, π=1406.25\n\nDuopol ligger mellom p.k. og monopol."},
+    {type:"mc", q:"I symmetrisk Cournot-duopol P=a−bQ, MC=c, hva er totalt kvantum?",
+      opts:["(a−c)/(3b)","(a−c)/(2b)","2(a−c)/(3b)","(a−c)/b"],
+      correct:2, src:"Lecture 6",
+      expl:"Per firma: q_i = (a−c)/(3b). Totalt duopol: Q = 2(a−c)/(3b).\n\nMerk: (a−c)/b er p.k.-kvantum, (a−c)/(2b) er monopol. Cournot produserer 2/3 av p.k., som er 4/3 av monopol."},
+    {type:"mc", q:"Hva er 'first-mover advantage' i Stackelberg?",
+      opts:["Lederen betaler høyere kostnader","Lederen produserer mer og tjener mer enn følgeren, selv ved identiske firmaer","Lederen velger pris, følgeren tilpasser","Følgeren tjener alltid mer"],
+      correct:1, src:"Lecture 6 - Stackelberg",
+      expl:"Lederen velger q FØRST, så følgeren. Lederen vet at følgeren reagerer langs sin reaksjonsfunksjon, og velger punktet som maksimerer egen profitt. Utfall: q1^S > q2^S, π1^S > π2^S."},
+    {type:"mc", q:"Hvordan sammenligner total Stackelberg-output seg med Cournot ved symmetriske firmaer?",
+      opts:["Q^S < Q^C","Q^S = Q^C","Q^S > Q^C (mer konkurranse)","Avhenger av pris/kvantum-modell"],
+      correct:2, src:"Lecture 6",
+      expl:"Q^S = 3(a−c)/(4b) ≈ 0.75(a−c)/b.\nQ^C = 2(a−c)/(3b) ≈ 0.667(a−c)/b.\n\nQ^S > Q^C. Stackelberg gir mer konkurransedyktig utfall: høyere total output, lavere pris."},
+    {type:"mc", q:"Hva er hovedutfallet i standard Bertrand (ubegrenset kapasitet, homogene goder)?",
+      opts:["Monopolpris, deling av marked","Priskjæring til p = MC, null profitt","Implicit koordinering til høyeste pris","Pris avhenger kontinuerlig av N"],
+      correct:1, src:"Lecture 6 - Bertrand",
+      expl:"**Bertrand-paradokset**: Prisene kuttes i kappløp til p = MC, null profitt - selv med bare 2 firmaer. Hvis p > MC, kan et firma underby med p−ε og kapre hele markedet. Ekstremt utfall som ikke passer virkeligheten."},
+    {type:"mc", q:"Hva kjennetegner Bertrand med kapasitetsbegrensninger?",
+      opts:["Pris = MC","Pris settes slik at total markedsetterspørsel = samlet kapasitet K1+K2","Monopolmengder produseres","Kapasitet elimineres fra likevekt"],
+      correct:1, src:"Lecture 6 - Bertrand with capacity",
+      expl:"Med kapasitetsbegrensninger kan ikke et firma kapre hele markedet ved underbying. Nash-likevekt: p = p(K1+K2), der etterspørsel = total kapasitet. Løser Bertrand-paradokset."},
+    {type:"calc", q:"Regneoppgave (Bertrand med kapasitet):\n\nTo firmaer, MC=4, P=220−2Q.\n\n(a) Ubegrenset kapasitet: pris, kvantum, profitt?\n(b) K1=K2=36?",
+      src:"Exercise 3 - Oligopolistic markets",
+      expl:"**Formler:**\n• Ubegrenset Bertrand: P = MC\n• Med kapasitet: P = P(K1+K2)\n\n**STEG 1 — Ubegrenset (a):**\nP = MC = **4**\n4 = 220 − 2Q → **Q = 108**\nq1 = q2 = **54**\nProfitt: **0**\n\n**STEG 2 — K1=K2=36 (b):**\nK = 72\nP = 220 − 2·72 = 220 − 144 = **76**\nq1 = q2 = **36** (full kapasitet)\nProfitt per firma: (76−4)·36 = 72·36 = **2592**\n\n**Fasit:**\n(a) P=4, q=54, π=0 hver\n(b) P=76, q=36, π=2592 hver\n\nKapasitet løfter prisen fra 4 til 76 og gir reell profitt."},
+    {type:"mc", q:"Hva er 'revealed profitability' for Stackelberg-leder?",
+      opts:["Lederen kan alltid velge Cournot-kvantum; et annet valg betyr høyere profitt","Lederen har lavere kostnader","Lederen får monopolprofitt","Følgeren er irrasjonell"],
+      correct:0, src:"Lecture 6",
+      expl:"Lederen vet at følgeren bruker samme reaksjonsfunksjon som i Cournot. Hvis lederen velger q1^C, blir utfallet Cournot. At lederen velger noe ANNET betyr at dette MÅ gi minst like høy profitt. Derfor π1^S ≥ π1^C."},
+    {type:"mc", q:"Hvilken er IKKE en vanlig innvending mot standard Bertrand?",
+      opts:["Urealistisk at flere firmaer ikke senker pris","Urealistisk null profitt for duopoler","Urealistisk at p = MC alltid","Urealistisk at firmaer noen gang konkurrerer på pris"],
+      correct:3, src:"Lecture 6",
+      expl:"De tre første er klassiske kritikker. Den fjerde er IKKE kritikk - mange bransjer konkurrerer nettopp på pris. Løsninger: differensiering, kollusjon, dynamisk konkurranse, kapasitetsbegrensninger."},
+    {type:"mc", q:"I Cournot N-firmas-likevekt, hvilken relasjon gjelder L og HHI?",
+      opts:["L = HHI · ε","L = HHI / ε","L = ε / HHI","L uavhengig av HHI"],
+      correct:1, src:"Lecture 7, slide 30",
+      expl:"Fra Cournot utledes: **L = HHI / ε** (industri-nivå). På firma: L_i = s_i / ε. Markedsmakt ØKER med konsentrasjon og SYNKER med elastisitet."},
+    {type:"mc", q:"Hvilken er en KOLLUSIV modell?",
+      opts:["Cournot-duopol","Bertrand priskonkurranse","Kartell som OPEC","Stackelberg leder-følger"],
+      correct:2, src:"Lecture 6",
+      expl:"Kollusive: Karteller (OPEC). Konkurrerende: Cournot/Bertrand (simultane), Stackelberg (sekvensielle). Karteller er ulovlige i antitrust."},
+    {type:"text", q:"Forklar hvorfor Bertrand-utfallet (p=MC) er vanskelig i praksis. Nevn minst 2 løsninger.",
+      keywords:["capacity","differentiation","collusion","dynamic","price war","two","firms"],
+      src:"Lecture 6",
+      expl:"**Urealistisk utfall**:\n• Prediker null profitt med 2 firmaer, men virkelige duopoler tjener profitt\n• Antall firmaer påvirker ikke pris, men empirisk synker priser med flere firmaer\n\n**Løsninger (min 2)**:\n1. **Produktdifferensiering**: Ikke homogene goder, lojalkunder\n2. **Kollusjon**: Implicit eller eksplicit samarbeid\n3. **Dynamisk konkurranse/priskrig**: Frykt for gjengjeldelse i gjentatte spill\n4. **Kapasitetsbegrensninger**: Kan ikke kapre hele markedet, pris stabiliseres"},
+  ]
+},
+"7_Concentration": {
+  title: "Lecture 7: Industry Concentration",
+  questions: [
+    {type:"mc", q:"Hva er definisjonen av C_k?",
+      opts:["Sum av markedsandelene til de k STØRSTE firmaene","Gjennomsnittlig markedsandel","Forholdet mellom største og minste","Kvadrat av største markedsandel"],
+      correct:0, src:"Lecture 7, slide 20",
+      expl:"C_k = sum av markedsandelene til de k største firmaene. Eksempler: C_1, C_4, C_20. Jo høyere, desto mer konsentrert industri."},
+    {type:"mc", q:"Formel for HHI (markedsandeler i prosent)?",
+      opts:["HHI = Σ s_i","HHI = 10,000 · Σ s_i² (med s_i som desimal)","HHI = Σ s_i · log(s_i)","HHI = s_1 / Σ s_i"],
+      correct:1, src:"Lecture 7, slide 22",
+      expl:"HHI = 10,000 · Σ s_i² (s_i som desimal). Alternativ: HHI = Σ (s_i i %)². Ekstremer: Perfekt konkurranse → 0; Monopol = 10,000."},
+    {type:"mc", q:"Hvilken fordel har HHI over C_k?",
+      opts:["HHI er alltid lavere","HHI fanger ASYMMETRIER og inkluderer ALLE firmaer","HHI krever kun data om største","HHI er definert for p.k."],
+      correct:1, src:"Lecture 7, slide 22-23",
+      expl:"(1) Fanger asymmetrier: S_A=[50,10,10,10,10,10] → HHI=3000; S_B=[20,20,20,20,10,10] → HHI=1800, begge med C_4=80%.\n(2) Dekker alle firmaer, ikke bare topp-k."},
+    {type:"calc", q:"Regneoppgave (HHI):\n\n5 firmaer: 40%, 25%, 15%, 12%, 8%.\n\nBeregn HHI og C_3. EU-sone (post-merger)?",
+      src:"Lecture 7 + Lecture 15 slide 40",
+      expl:"**Formler:**\n• HHI = Σ (s_i i %)²\n• C_k = sum av k største\n• EU: Grønn <1500; Gul 1500-2500; Rød >2500\n\n**STEG 1 — HHI:**\n40² + 25² + 15² + 12² + 8²\n= 1600 + 625 + 225 + 144 + 64\n= **2658**\n\n**STEG 2 — C_3:**\n40 + 25 + 15 = **80%**\n\n**STEG 3 — Sone:**\nHHI = 2658 > 2500 → **RØD SONE**\n\n**Fasit:**\n• HHI = 2658\n• C_3 = 80%\n• Rød sone"},
+    {type:"mc", q:"Lerner-indeks på firma-nivå?",
+      opts:["L_i = (p − MC_i) / p","L_i = MC_i / p","L_i = p · MC_i","L_i = (p − AC_i) / (p − MC_i)"],
+      correct:0, src:"Lecture 7, slide 27",
+      expl:"L_i = (p−MC_i)/p = prosentvis markup. P.k.: L=0. Monopol: L→1. Industri: L = Σ s_i·L_i."},
+    {type:"mc", q:"I Cournot N-firmas, firma i's Lerner?",
+      opts:["L_i = 1/N","L_i = s_i / ε","L_i = HHI · ε","L_i = 0"],
+      correct:1, src:"Lecture 7, slide 30",
+      expl:"L_i = s_i / ε (markedsandel delt på elastisitet). Industri: L = HHI / ε. Høyere markedsandel → mer makt. Høyere elastisitet → mindre prisøkning."},
+    {type:"mc", q:"Free-entry-likevekt n* i symmetrisk Cournot?",
+      opts:["Antall firmaer med profitt = 0 (null-profit likevekt)","n* = 1","n* = uendelig","n* = 2"],
+      correct:0, src:"Lecture 7, slide 37",
+      expl:"Firmaer entrer så lenge profitt > 0, stopper ved π = 0. Formel: n* = (a−c)·√(S/F) − 1. Større marked → flere firmaer. Høyere F → færre firmaer."},
+    {type:"mc", q:"To hovedkategorier konsentrasjonsdrivere?",
+      opts:["Kortsiktige og langsiktige","Strukturelle drivere og STRATEGISKE barrierer","Innenlandske og utenlandske","Offentlige og private"],
+      correct:1, src:"Lecture 7, slide 33",
+      expl:"(1) Strukturelle: markedsstørrelse, skaleøkonomier, tekniske/regulatoriske barrierer.\n(2) Strategiske: firmaenes egne strategier (lecture 8) - commitment via sunk costs, signaling."},
+    {type:"mc", q:"Hvilket eksempel viser BEST HHI > C_4?",
+      opts:["S_A=[50,10,10,10,10,10] og S_B=[20,20,20,20,10,10]: samme C4=80% men HHI_A=3000, HHI_B=1800","HHI identisk = samme struktur","HHI alltid lavere enn C_4","HHI = Lerner"],
+      correct:0, src:"Lecture 7, slide 23",
+      expl:"Samme C_4=80%, men S_A er mer konsentrert pga. dominant firma (50%). HHI fanger dette via kvadrering (50²=2500 mot 4·20²=1600)."},
+    {type:"mc", q:"Hva skjer med konsentrasjon når markedsstørrelse S vokser?",
+      opts:["Konsentrasjon øker","Konsentrasjon synker fordi flere firmaer får plass","Uavhengig av S","Alle firmaer forsvinner"],
+      correct:1, src:"Lecture 7, slide 37",
+      expl:"n* = (a−c)·√(S/F) − 1. Økt S → flere firmaer → lavere markedsandeler → lavere HHI. Større markeder støtter flere firmaer."},
+    {type:"mc", q:"Hva er en STRUKTURELL inngangsbarriere?",
+      opts:["Bevisst strategi fra inkumbenten","Barriere fra markedstekniske eller regulatoriske forhold","Informasjonsasymmetri","Priskrig etter entry"],
+      correct:1, src:"Lecture 7, keywords",
+      expl:"Strukturelle: eksisterer uavhengig av firmaatferd (skaleøkonomier, patent, lisenser). Strategiske (lec 8): bevisste handlinger fra inkumbent."},
+    {type:"mc", q:"Hva er konsentrasjonsvektoren S?",
+      opts:["Liste av alle markedsandeler i synkende rekkefølge","Vektor av firmaenes profitt","Sum av markedsandeler","Kun topp 3"],
+      correct:0, src:"Lecture 7, slide 18",
+      expl:"S = [s_1, s_2, ..., s_N] sortert i SYNKENDE rekkefølge. Fra denne beregnes C_k, HHI, Lerner-indeks."},
+    {type:"mc", q:"Industri med 10 firmaer, hver 10%, hva er HHI?",
+      opts:["100","1000","10,000","0"],
+      correct:1, src:"Lecture 7",
+      expl:"HHI = 10 · 10² = 1000. Lav konsentrasjon men ikke null. Grønn sone (<1500). P.k.: HHI→0. Monopol: HHI=10,000."},
+    {type:"text", q:"Forklar forskjellen mellom markedskonsentrasjon (HHI) og markedsmakt (Lerner). Hvordan relatert i Cournot?",
+      keywords:["concentration","market power","HHI","Lerner","elasticity","Cournot","relationship"],
+      src:"Lecture 7, slides 27-30",
+      expl:"**HHI (Konsentrasjon)**: Strukturelt mål. Hvordan er markedsandelene FORDELT? Sier ingenting om priser.\n\n**Lerner (Markedsmakt)**: Adferdsmål. Hvor langt er pris fra MC?\n\n**Relasjon i Cournot**:\n• L_i = s_i / ε\n• L = HHI / ε\n\nKonsentrasjon PREDIKERER markedsmakt GITT Cournot-adferd. Ikke mekanisk i andre modeller (Bertrand med mange firmaer: L=0 uansett HHI)."},
+    {type:"mc", q:"Hvilken markedsandel gir lavest HHI for 4 firmaer?",
+      opts:["[70,10,10,10]","[40,30,20,10]","[30,30,20,20]","[25,25,25,25]"],
+      correct:3, src:"Lecture 7",
+      expl:"[70,10,10,10]=5200; [40,30,20,10]=3000; [30,30,20,20]=2600; [25,25,25,25]=2500 ← LAVEST.\nHHI er lavest når andeler er SOM LIKE SOM MULIG."},
+  ]
+},
+"8_EntryBarriers": {
+  title: "Lecture 8: Strategic Entry Barriers",
+  questions: [
+    {type:"mc", q:"Hva er en STRATEGISK inngangsbarriere?",
+      opts:["Naturlig markedsegenskap","Handling inkumbenten gjør for å gjøre tøff etter-entry-scenario TROVERDIG og avskrekke entry","Informasjonsasymmetri","Lovlig regulering"],
+      correct:1, src:"Lecture 8, slide 8",
+      expl:"Bevisste handlinger fra inkumbenten som gjør trussel om tøff respons TROVERDIG. To hovedtyper: (1) Commitment via sunk costs, (2) Signaling."},
+    {type:"mc", q:"To hovedtyper strategiske barrierer?",
+      opts:["Patenter og merkevarer","Commitment og Signaling","Kontrakter og priskontroller","Fusjoner og oppkjøp"],
+      correct:1, src:"Lecture 8, slide 8",
+      expl:"(1) **Commitment**: Irreversibel binding via sunk cost. Priskrig blir rasjonell respons.\n(2) **Signaling**: Avsløre skjult fordel (lave kostnader) via limit pricing."},
+    {type:"mc", q:"Hvorfor er sunk cost sentral i commitment?",
+      opts:["Reversibel og kan fjernes","UGJENKALLELIG og binder inkumbenten til tøff respons","Reduserer entrants kostnader","Pålagt av myndigheter"],
+      correct:1, src:"Lecture 8, slide 9",
+      expl:"Sunk cost = ugjenkallelig. Hvis HAR betalt, blir det rasjonelt å velge tøff strategi (akkommodasjon ville gi tap). Entranten ser dette og avstår."},
+    {type:"mc", q:"Hva er 'limit pricing'?",
+      opts:["Laveste pris regulator tillater","Strategisk lav pris som SIGNAL om LAVE KOSTNADER","Maksimal pris for å unngå antitrust","Pris = MC"],
+      correct:1, src:"Lecture 8, slide 23",
+      expl:"Limit pricing = prisreduksjon som signal. Lav pris lønnsom KUN for lavkost-inkumbent. Entranten tolker dette som bevis på at priskrig etter entry vil være ulønnsom."},
+    {type:"mc", q:"Informasjonsforhold for signaling-effektivitet?",
+      opts:["Full informasjon begge parter","Adverse selection (inkumbent har skjult info)","Moral hazard","Perfekt konkurranse"],
+      correct:1, src:"Lecture 8",
+      expl:"Krever ADVERSE SELECTION: inkumbenten vet mer om kostnader enn entrant. Signalet må også være DIFFERENSIELT kostbart (ellers 'cheap talk')."},
+    {type:"mc", q:"Hva er Subgame Perfect Equilibrium (SPE)?",
+      opts:["Nash-likevekt i ett steg","Nash-likevekt i HVERT delspill","Alle samarbeider","Ingen rasjonelle spillere"],
+      correct:1, src:"Lecture 8",
+      expl:"SPE = Nash-likevekt i HVERT subgame, også de som ikke nås i likevektsbanen. Eliminerer 'ikke-troverdige trusler'. Finnes ved BACKWARD INDUCTION."},
+    {type:"mc", q:"Hvorfor er noen sunk costs 'burning money'?",
+      opts:["Alltid ulovlige","Rasjonelle kun i lys av entry-avskrekking; uten entrant bortkastet","Brenner fysiske aktiva","Reduserer markedsverdi"],
+      correct:1, src:"Lecture 8, slide 21",
+      expl:"Commitment er ofte 'burning money': inkumbenten påtar seg kostnad som ellers ville vært bortkastet. Men med entry-trussel blir det rasjonelt - avskrekking bevarer monopolprofitt."},
+    {type:"mc", q:"Betingelse for troverdig priskrig-trussel i commitment?",
+      opts:["π_C − F < −L","π_C − F > −L","F = 0","π_M > π_C"],
+      correct:0, src:"Lecture 8, slide 17",
+      expl:"For at priskrig skal være rasjonell respons: π_C − F < −L.\n• π_C = profitt ved akkommodasjon\n• F = sunk commitment\n• −L = tap i priskrig\n\nBetingelsen: akkommodasjon etter commitment DÅRLIGERE enn priskrig."},
+    {type:"mc", q:"TYPISK eksempel på sunk commitment?",
+      opts:["Lønn til deltidsansatte","Reklamekampanjer for lansering i nytt land","Kontorstoler","Generisk software-lisens"],
+      correct:1, src:"Lecture 8, slide 21",
+      expl:"Pensum eksempler: markedsføring i nytt marked, tillatelser for tung industri, spesifikke FoU-prosjekter. Felles: IKKE overførbart til andre markeder."},
+    {type:"mc", q:"Hva er 'entry blockaded'?",
+      opts:["Fysisk forbudt","Så lite attraktivt at entry ikke skjer uten strategiske barrierer","Alltid positiv NPV","Kontinuerlig entry"],
+      correct:1, src:"Lecture 8",
+      expl:"Entry blockaded = allerede så ulønnsomt (strukturelle barrierer) at det ikke skjer. Inkumbenten trenger IKKE investere i strategiske barrierer. Viktig å sjekke først."},
+    {type:"mc", q:"Overlapp mellom commitment og TCE?",
+      opts:["Begge er kontrakter","Sunk cost = relation-specific investment; begge handler om irreversibilitet","Ingen overlapp","Commitment er vertikal integrasjon"],
+      correct:1, src:"Lecture 8 + Lecture 9",
+      expl:"IRREVERSIBILITET er fellesnevner. TCE: relation-specific investments skaper hold-up-fare. Entry barriers: sunk costs skaper commitment. Begge bygger på irreversible investeringer."},
+    {type:"mc", q:"Krav for limit pricing som troverdig signal?",
+      opts:["Lønnsomt for begge typer","Lønnsomt KUN for lavkost, tapsgivende for høykost","Høyere enn MC","Offisielt kunngjort"],
+      correct:1, src:"Lecture 8, slide 23",
+      expl:"Troverdig signal må være DIFFERENSIELT kostbart. Hvis begge typer kan sette samme pris, er signalet meningsløst. Formelt: c_L < p_L < c_H. Da avslører handlingen inkumbentens type."},
+    {type:"text", q:"Forklar forskjellen mellom 'commitment' og 'signaling'. Hvorfor ulike informasjonsforutsetninger?",
+      keywords:["commitment","signaling","sunk cost","information","adverse selection","credibility","complete information"],
+      src:"Lecture 8, slide 8",
+      expl:"**Commitment**:\n• Binder gjennom ugjenkallelig sunk cost\n• Troverdighet: reverseringer blir ulønnsomme\n• Kan fungere med FULL INFORMASJON\n• Kostnad: bedriften betaler F\n\n**Signaling**:\n• Avslører skjult fordel (lave kostnader) via handling\n• Krever ADVERSE SELECTION (entrant delvis uinformert)\n• Kostnad: midlertidig redusert profitt\n\n**Forskjell**: Commitment ENDRER utfall (gjør tøff respons rasjonell). Signaling AVSLØRER info (inkumbent var allerede tøff, men entrant visste ikke)."},
+    {type:"mc", q:"Når er entry MER SANNSYNLIG akkommodert?",
+      opts:["F for LITEN til å gjøre priskrig rasjonell","Inkumbent har patent","Naturlig monopol","Entrant større"],
+      correct:0, src:"Lecture 8 + exam solutions",
+      expl:"Hvis π_C − F > −L, er akkommodasjon lønnsom. Entrant ser dette (backward induction) og entrer. SPE = (e, r̅). Krever tilstrekkelig stor commitment."},
+    {type:"mc", q:"Hvorfor er backward induction viktig?",
+      opts:["Forutsier kortsiktige priser","Identifiserer TROVERDIGE trusler ved å eliminere irrasjonelle","Krever altruisme","Ignorerer strategi"],
+      correct:1, src:"Lecture 8",
+      expl:"Backward induction: start fra siste trinn, finn optimal handling, jobb bakover. I entry-spill: inkumbentens valg ETTER entry (akkommodasjon vs. priskrig), så entrantens valg. Eliminerer ikke-troverdige trusler."},
+  ]
+},
+"9_TCE": {
+  title: "Lecture 9: TCE & Vertical Integration",
+  questions: [
+    {type:"mc", q:"Tre pilarer i TCE?",
+      opts:["Profitt, vekst, markedsandel","Bounded rationality, opportunisme, relation-specific investments","Skala, diversifisering, innovasjon","Monopol, konkurranse, regulering"],
+      correct:1, src:"Lecture 9, slide 12",
+      expl:"Williamsons tre pilarer: (1) Bounded rationality → ufullstendige kontrakter. (2) Opportunisme. (3) Relation-specific investments. Alle tre må være tilstede for markedssvikt."},
+    {type:"mc", q:"Ex-ante transaksjonskostnader?",
+      opts:["Etter transaksjon","Søk etter partnere og forhandling av kontrakter","Håndheving","Skatter"],
+      correct:1, src:"Lecture 9, slide 11",
+      expl:"Ex-ante: søk/info og forhandling (skrive kontrakt). Ex-post: overvåking og håndheving. Begge er transaksjonskostnader utover vareprisen."},
+    {type:"mc", q:"Hovedtrade-off marked vs hierarki?",
+      opts:["Marked alltid billigere","Marked høyere teknisk effektivitet; hierarki høyere agency efficiency","Hierarki har ingen TC","Identiske"],
+      correct:1, src:"Lecture 9, slide 38",
+      expl:"Trade-off:\n• MARKED: høy teknisk effektivitet (skala, spesialisering)\n• HIERARKI: høy agency efficiency (bedre koordinering)\n\nVelg det som minimerer SUM av tekniske + agency-kostnader."},
+    {type:"mc", q:"Når er vertikal integrasjon MEST gunstig?",
+      opts:["Lav asset specificity, høy skala i marked","Høy asset specificity eller stor intern skala","Alltid","Aldri"],
+      correct:1, src:"Lecture 9, slide 45",
+      expl:"• Lav spesifisitet + markedets skala → MARKED\n• Stor intern skala → integrasjon\n• Svært høy spesifisitet → alltid integrasjon (hold-up)\n\nDrivere: asset specificity og skala."},
+    {type:"mc", q:"Hva er 'bounded rationality'?",
+      opts:["Perfekt rasjonelle aktører","Begrenset kognitiv kapasitet, kan ikke skrive komplette kontrakter","Alltid opportunistiske","Ubetinget samarbeid"],
+      correct:1, src:"Lecture 9, slide 32",
+      expl:"Aktører er rasjonelle men kognitivt begrenset. Kan ikke forutse alle fremtidige scenarier. Kontrakter blir UFULLSTENDIGE, som åpner for opportunisme."},
+    {type:"mc", q:"Hvorfor underinvestering i relation-specific assets i marked?",
+      opts:["Høye kapitalkostnader","Hold-up-frykt: motparten kan utnytte spesifisiteten","Skatteregler","Offentlig regulering"],
+      correct:1, src:"Lecture 9, slide 32",
+      expl:"Hold-up: Etter at A har investert spesifikt for B, kan B presse for bedre vilkår (A har ingen alternativer). Forutseende A UNDERINVESTERER. Pareto-ineffektivt utfall. Løsning: vertikal integrasjon."},
+    {type:"mc", q:"Coases syn på grunnlaget for firmaet?",
+      opts:["Staten tvinger","Aksjonærprofitt","Transaksjonskostnader i markedet; firmaet billigere noen ganger","Kun for skatter"],
+      correct:2, src:"Lecture 9, slide 10-11",
+      expl:"Coase (1937): Hvis marked var kostnadsfritt, trengte vi ikke firmaer - alt skjedde mellom individer. Men markedet har KOSTNADER (søk, forhandling, håndheving). Firmaet eksisterer når intern koordinering er billigere."},
+    {type:"mc", q:"Typer asset specificity?",
+      opts:["Kun fysisk","Site, physical, human, dedicated (flere dimensjoner)","Kun human","Kun merkevare"],
+      correct:1, src:"Lecture 9",
+      expl:"• Site specificity (geografisk)\n• Physical asset (spesialisert utstyr)\n• Human asset (kunnskap/kompetanse)\n• Dedicated assets (kapasitet for kunde)\n• Brand name specificity"},
+    {type:"mc", q:"Forskjell teknisk vs agency effektivitet?",
+      opts:["Teknisk = prosesskostnader; Agency = koordineringskostnader","Samme ting","Teknisk = andel; Agency = ansatte","Teknisk = juridisk; Agency = finansiell"],
+      correct:0, src:"Lecture 9, slide 38",
+      expl:"• Teknisk: kostnadseffektivitet i produksjon. Marked bedre (skala).\n• Agency: koordinering og transaksjonskostnader. Hierarki bedre (intern kontroll).\n\nBedriften velger det som minimerer SUMMEN."},
+    {type:"mc", q:"Hvorfor eliminerer fravær av opportunisme (alene) behov for komplette kontrakter?",
+      opts:["Alt med håndtrykk","Ingen utnytter hull; ufullstendige kontrakter fungerer","Staten tar over","TC null"],
+      correct:1, src:"Lecture 9, slide 32",
+      expl:"Hvis ingen er opportunistiske, trengs ikke presisjon. Alle fyller 'hullene' rimelig. Selv med bounded rationality og specificity: ingen utnytting → ingen markedssvikt. Alle tre pilarer må være tilstede."},
+    {type:"mc", q:"Typisk EX-POST transaksjonskostnad?",
+      opts:["Søk etter leverandør","Forhandling","Overvåking at leverandør holder avtale","Vareprisen"],
+      correct:2, src:"Lecture 9, slide 11",
+      expl:"Ex-post (etter avtale): overvåking/inspeksjon, håndheving ved brudd. Søk og forhandling er EX-ANTE. Selve vareprisen er IKKE TC (det er selve prisen)."},
+    {type:"text", q:"Forklar hvorfor alle tre TCE-pilarer må være tilstede samtidig.",
+      keywords:["bounded rationality","opportunism","relation-specific","three","pillars","complete","switching"],
+      src:"Lecture 9, slide 12",
+      expl:"**Pilarer**:\n1. Bounded rationality → ufullstendige kontrakter\n2. Opportunisme → utnyttelse\n3. Relation-specific → kan ikke bytte motpart\n\n**Uten én**:\n• Uten BR: Komplette kontrakter, ingen hull. Marked fungerer.\n• Uten opportunisme: Partene fyller hull ærlig. Marked fungerer.\n• Uten specificity: Kan bytte motpart ved utnyttelse. Disiplinering. Marked fungerer.\n\n**Konklusjon**: BARE med alle tre → underinvestering, markedssvikt, vertikal integrasjon blir rasjonelt."},
+    {type:"mc", q:"Hvorfor vertikal integrasjon ALLTID ved svært høy asset specificity?",
+      opts:["Intern alltid billigere","Hold-up-fare gjør marked uholdbart","Pålagt av antitrust","Diversifisering bedre"],
+      correct:1, src:"Lecture 9, slide 45",
+      expl:"Ved ekstrem spesifisitet blir hold-up-fare så stor at marked kollapser (underinvestering, reforhandlinger). Integrasjon eliminerer problemet - alt under én enhet. Skalaargument kommer i tillegg."},
+    {type:"mc", q:"Resultat av markedssvikt pga TC?",
+      opts:["Utvekslinger skjer ikke, eller med lavere effektivitet; underinvestering","Markedet alltid perfekt","Staten tar over alt","Automatiske fusjoner"],
+      correct:0, src:"Lecture 9, slide 32",
+      expl:"Konsekvenser: (1) Pareto-forbedrende transaksjoner skjer ikke. (2) Utvekslinger med ekstra kostnader. (3) Underinvestering i spesifikke ressurser. Markedssvikt som begrunner firmaets eksistens."},
+  ]
+},
+"10_Contestability": {
+  title: "Lecture 10: Contestability, Natural Monopoly, Network Effects",
+  questions: [
+    {type:"mc", q:"Definisjonen av naturlig monopol?",
+      opts:["Eksklusive rettigheter","Ett firma har LAVERE kostnader enn kombinasjoner av firmaer (cost subadditivity)","100% markedsandel tilfeldig","Staten eier"],
+      correct:1, src:"Lecture 10",
+      expl:"Cost subadditivity: TC(Q) < TC(q1) + TC(q2) + .... Billigere med ETT firma. Hovedårsak: skaleøkonomier. Typisk: infrastruktur (strøm, vann, gass)."},
+    {type:"mc", q:"Hovedtrade-off ved naturlig monopol?",
+      opts:["Innovasjon vs profitt","Produktiv effektivitet (billigst) vs allokativ ineffektivitet (monopolmakt)","Kort vs lang sikt","Offentlig vs privat"],
+      correct:1, src:"Lecture 10",
+      expl:"Godta monopol → produktiv effektivitet men allokativ ineffektivitet (p > MC, DWL). Avvise → motsatt. Regulering/SOE prøver å få begge: én leverandør med regulert pris."},
+    {type:"mc", q:"Krav for kontesterbart marked?",
+      opts:["Mange firmaer","Null entry/exit-kostnader; trussel disiplinerer inkumbent","Patent","Statlig regulering"],
+      correct:1, src:"Lecture 10",
+      expl:"Kontesterbart (Baumol): null sunk costs, fri exit, 'hit-and-run' mulig. Under disse antagelsene setter inkumbenten p = AC selv i monopol. I praksis restriktive antagelser."},
+    {type:"mc", q:"DIREKTE nettverkseffekter?",
+      opts:["Via mellommann","Brukerens nytte øker med antall andre brukere av samme produkt","Direkte betaling","Direkte regulering"],
+      correct:1, src:"Lecture 10",
+      expl:"Direkte (same-side): typisk 2-veis kommunikasjon. Eksempler: telefon, WhatsApp, språk, sosiale nettverk."},
+    {type:"mc", q:"INDIREKTE nettverkseffekter?",
+      opts:["Antall andre brukere","Antall komplementer på andre siden (typisk plattformer/systemer)","Uavhengig av andre","Offentlig regulert"],
+      correct:1, src:"Lecture 10",
+      expl:"Indirekte (cross-side): System (apps+OS, kaffekapsler+maskin), to-sidige plattformer (Airbnb, Uber, App Store). Nytten via 'andre siden'."},
+    {type:"mc", q:"Hva er 'critical mass'?",
+      opts:["Regulatorisk terskel","Brukermengde som utløser positiv feedback; markedet tar av","Minste lovlige produksjon","Karakter-terskel"],
+      correct:1, src:"Lecture 10",
+      expl:"Critical mass: minimum brukerbase for at nettverkseffekter blir selvforsterkende (bandwagon). Før: kan dø. Etter: eksplosiv vekst. Forklarer tidlig-markedsinngang-verdi."},
+    {type:"mc", q:"Effektivitet typisk for nettverksgoder?",
+      opts:["Kun statisk allokativ","DYNAMISK (innovasjon, skala), men allokativ ineffektivitet","Perfekt begge","Alltid ineffektive"],
+      correct:1, src:"Lecture 10",
+      expl:"Tre komplekse forhold konsentrasjon-effektivitet:\n• Contestable: allokativ med dominans\n• Naturlig monopol: produktiv men allokativ ineffektivitet\n• Nettverk: dynamisk med dominans, men allokativ ineffektivitet"},
+    {type:"mc", q:"'Path dependence' i nettverk?",
+      opts:["Fysisk sti","Tidlige valg LÅSER utfall; suboptimale standarder varer","Alle samme sti","Regulert vei"],
+      correct:1, src:"Lecture 10",
+      expl:"Tidlige hendelser låser markedet pga bandwagon + byttekostnader. Eksempler: QWERTY, VHS vs Betamax, Windows. First-mover advantage kan være varig."},
+    {type:"mc", q:"Hvorfor sjelden 'full contestability' i praksis?",
+      opts:["Elastisk etterspørsel","Restriktive antagelser: fordeler for inkumbent, sunk costs, midlertidig priskutt ved entry","Myndigheter stopper","Konsumenter likegyldige"],
+      correct:1, src:"Lecture 10",
+      expl:"Hit-and-run krever: null sunk costs, umiddelbar entry/exit, perfekt info. Virkeligheten: inkumbenter har fordeler, kostnader er sunk, midlertidige priskutt mulig. Sjelden 'full' kontesterbarhet."},
+    {type:"mc", q:"Standards war mellom inkompatible plattformer?",
+      opts:["Prisavtale","Kjemper om installed base; 'winner takes all' med sterk nettverkseffekt","Staten velger","Automatisk fusjon"],
+      correct:1, src:"Lecture 10 + SQ Exam Simulation",
+      expl:"Standards war-betingelser: (1) Inkompatible (multihoming hardt), (2) Proprietære, (3) Lignende features/priser. Sterk nettverkseffekt → monopolisering. Strategier: subsidiere tidlige adoptører, eksklusivitet."},
+    {type:"mc", q:"'Multihoming' betyr?",
+      opts:["Brukerne bruker FLERE plattformer samtidig","Flere hjem","Flere hovedkvarter","Flere hjemmemarkeder"],
+      correct:0, src:"Lecture 10",
+      expl:"Multihoming = parallelt bruk av flere plattformer. Lett multihoming → svakere lock-in. Hardt multihoming → sterkere nettverkseffekt. Eksempel: Instagram+TikTok (lett), PC-OS (hardt)."},
+    {type:"mc", q:"IKKE kjennetegn ved naturlige monopoler?",
+      opts:["Høye skaleøkonomier","Sunk infrastruktur","Cost subadditivity","Perfekt elastisk etterspørsel"],
+      correct:3, src:"Lecture 10 + 14",
+      expl:"Naturlige monopoler har: skaleøkonomier, sunk investeringer, cost subadditivity, RELATIVT INELASTISK etterspørsel (essensielle tjenester). Perfekt elastisk etterspørsel er p.k."},
+    {type:"mc", q:"Strategier i standards war?",
+      opts:["Kun subsidier","Aggressive priser, eksklusive avtaler med komplement-tilbydere, markedsføring","Ignorere konkurrenter","Redusere kvalitet"],
+      correct:1, src:"Lecture 10",
+      expl:"(1) Penetration pricing (subsidiere tidlig). (2) Eksklusivitetsavtaler for nøkkelkomplementer. (3) Markedsføring (selvoppfyllende profeti). (4) Åpenhet-balanse. (5) Allianser."},
+    {type:"text", q:"Forskjell direkte vs indirekte nettverkseffekter. Gi ett eksempel på hver.",
+      keywords:["direct","indirect","same-side","cross-side","platform","system","communication","complement"],
+      src:"Lecture 10",
+      expl:"**Direkte (same-side)**:\n• Nytte øker med antall ANDRE BRUKERE av samme produkt.\n• Typisk 2-veis kommunikasjon.\n• Eksempler: WhatsApp, språk, telefon.\n\n**Indirekte (cross-side)**:\n• Nytte avhenger av KOMPLEMENTER/andre siden av plattform.\n• Typisk systemer/plattformer.\n• Eksempler: Uber, App Store, Nespresso-kapsler.\n\nI 'community of practice'-app er direkte effekter dominerende."},
+  ]
+},
+"11_Diversification": {
+  title: "Lecture 11: Diversification",
+  questions: [
+    {type:"mc", q:"Hoveddrivere for diversifisering?",
+      opts:["Skatter","Economies of scope, risikoreduksjon, managers preferanser, porteføljebalansering","Patent","Antitrust"],
+      correct:1, src:"Lecture 11, slide 14",
+      expl:"(1) Economies of scope (delte ressurser). (2) Risikoreduksjon (stabilisert cash flow). (3) Managers' preferanser (jobbsikkerhet). (4) Porteføljebalansering."},
+    {type:"mc", q:"Hva er 'economies of scope'?",
+      opts:["Stordrifsfordeler av ETT produkt","Kostnadsfordeler ved FLERE produkter i samme organisasjon","Lavere skatt","Markedsandel"],
+      correct:1, src:"Lecture 11",
+      expl:"C(q1,q2) < C(q1,0) + C(0,q2). Billigere sammen pga delte ressurser (FoU, merkevare, distribusjon). Skilt fra economies of scale (ETT produkt, mer volum)."},
+    {type:"mc", q:"Tre tester for diversifisering?",
+      opts:["Attractiveness, Cost-of-entry, Better-off","Profitability, Popularity, Power","Demand, Supply, Regulation","Trust, Transparency, Transaction"],
+      correct:0, src:"Lecture 11, slide 21",
+      expl:"(1) Attractiveness: er industrien strukturelt attraktiv? (2) Cost of entry: overstiger inngangskostnader fremtidig profitt? (3) Better-off: sterke synergier? Alle tre må oppfylles."},
+    {type:"mc", q:"Empirisk om diversifiserte firmaer?",
+      opts:["Alltid outperformer","I snitt LAVERE prestasjon enn fokuserte; trolig overdiversifisering/agency","Ingen forskjell","Alltid tapsbringende"],
+      correct:1, src:"Lecture 11, slide 29",
+      expl:"Empirisk: diversifiserte firmaer har i snitt lavere prestasjon. Forklaringer: overdiversifisering, agency-problem (ledere diversifiserer for egen trygghet), koordineringskostnader."},
+    {type:"mc", q:"Hvorfor ønsker ledere mer diversifisering enn aksjonærer?",
+      opts:["Bedre markedskunnskap","Kan ikke diversifisere personlig portefølje; reduserer JOBBRISIKO","Alltid bonus","Aksjonærer foretrekker tap"],
+      correct:1, src:"Lecture 11",
+      expl:"Klassisk agency-problem. Aksjonærer kan diversifisere porteføljen selv. Ledere er knyttet til ETT firma - diversifisering beskytter jobb og karriere. Kan forklare overdiversifisering."},
+    {type:"mc", q:"Kjennetegn ved konglomerat?",
+      opts:["Samme produkt, mange land","Eier mange URELATERTE virksomheter under ett tak","Statlig monopol","Kun M&A"],
+      correct:1, src:"Lecture 11, slide 9",
+      expl:"Konglomerat = diverse virksomheter i ofte urelaterte industrier. Eksempler: Berkshire Hathaway, Samsung, GE historisk. Tilsvarer UNRELATED diversifisering."},
+    {type:"mc", q:"Forskjell relatert vs urelatert diversifisering?",
+      opts:["Ingen vesentlig","Relatert: felles strategiske ressurser/synergier; urelatert: ingen åpenbare synergier","Identisk","Kun relatert lovlig"],
+      correct:1, src:"Lecture 11, slide 9",
+      expl:"• Relatert: deler merkevare, distribusjon, teknologi, kunder. Sterke synergier.\n• Urelatert (konglomerat): ingen åpenbar synergi. Logikk: risikodiversifisering eller ledelseskompetanse.\n\nRelatert ofte mer suksessfull."},
+    {type:"mc", q:"Typisk EX-POST kostnad ved diversifisering?",
+      opts:["Oppkjøpspris","Koordinering, redusert insentiv, langsom informasjonsflyt","Lisenser","Revisjon"],
+      correct:1, src:"Lecture 11, slide 12",
+      expl:"Ex-ante: oppkjøpspris, oppstart.\nEx-post: koordineringskostnader, agency (reduserte insentiver for divisjonsledere), langsommere informasjonsflyt, strategisk forvirring."},
+    {type:"mc", q:"'Horizontal expansion' (motsatt av diversifisering)?",
+      opts:["Mer av SAMME produkt i SAMME industri","Kjøpe leverandører","Nye industrier","Selge virksomhet"],
+      correct:0, src:"Lecture 11, slide 9",
+      expl:"Horizontal = vekst innenfor samme industri/produktlinje. Kontrast: diversifisering (nye produkter), vertikal integrasjon (oppstrøms/nedstrøms)."},
+    {type:"mc", q:"Forskjell diversifisering vs vertikal integrasjon?",
+      opts:["Diversifisering = nye industrier; VI = oppstrøms/nedstrøms i SAMME verdikjede","Samme","Kun div lovlig","VI alltid urelatert"],
+      correct:0, src:"Lecture 11 + 9",
+      expl:"• Diversifisering (horisontale/urelaterte): nye produkter. Logikk: scope economies.\n• Vertikal integrasjon: oppstrøms/nedstrøms i SAMME verdikjede. Logikk: TCE.\n\nHorisontal vs vertikal dimensjon."},
+    {type:"mc", q:"'Better-off'-testen?",
+      opts:["Blir større","Finnes STERKE SYNERGIER (2+2=5)","Mer lønnsom over tid","Aksjekurs stiger"],
+      correct:1, src:"Lecture 11, slide 21",
+      expl:"Better-off: synergiene må gjøre helheten mer verd enn summen. Uten better-off: aksjonærer kan bare kjøpe begge separat. Mange ledere OVERESTIMERER synergier - kjent problem i M&A."},
+    {type:"mc", q:"Hvorfor særlig kostbar diversifisering via oppkjøp?",
+      opts:["Kjøpspremium (20-40%), finansiering, integrasjon","Antitrust","Skatter","Alltid ulovlig"],
+      correct:0, src:"Lecture 11, slide 11",
+      expl:"Oppkjøp: (1) Premium 20-40% over markedspris. (2) Finansiering (renter, utvanning). (3) Integrasjonskostnader (IT, HR, kultur). Forklarer hvorfor mange M&A ødelegger verdi."},
+    {type:"mc", q:"IKKE en fordel ved diversifisering?",
+      opts:["Deling av ressurser","Stabilisert cash flow","Maksimerer kortsiktig aksjonærverdi alltid","Overføring av ferdigheter"],
+      correct:2, src:"Lecture 11",
+      expl:"Diversifisering MAKSIMERER IKKE alltid kortsiktig aksjonærverdi - empirisk senker det snarere. De andre er klassiske fordeler."},
+    {type:"text", q:"Hvorfor kan managers ha andre preferanser enn aksjonærer ved diversifisering?",
+      keywords:["diversify","portfolio","risk","manager","job","career","shareholders","stock"],
+      src:"Lecture 11, slide 14",
+      expl:"**Asymmetri**:\n• Aksjonærer kan diversifisere personlig portefølje - vil at firmaet fokuserer på høy-avkastning.\n• Ledere knyttet til ETT firma - lønn, bonus, karriere avhenger av jevn prestasjon.\n\n**Konsekvens**:\nLedere foretrekker diversifisering av BEDRIFTEN (stabilisert inntjening, jobbsikkerhet). For aksjonærer: dobbel risikoreduksjon - kostbart uten gevinst.\n\nKlassisk agency-problem (moral hazard). Forklarer overdiversifisering i praksis."},
+    {type:"mc", q:"Eksempel på RELATED diversifisering?",
+      opts:["Bilselskap → brennerimerke","Coca-Cola → flaskevann","Oljeselskap → mat","Forsikring → fotballklubb"],
+      correct:1, src:"Lecture 11, slide 9",
+      expl:"Coca-Cola → Dasani er RELATERT: delt distribusjon (supermarkeder), emballasje, merkevarelogikk, salgsorganisasjon. De andre er UrelATED (konglomerat)."},
+  ]
+},
+"12_Innovation": {
+  title: "Lecture 12: Market Structure and Innovation",
+  questions: [
+    {type:"mc", q:"Hva predikerer Replacement Effect?",
+      opts:["Monopolister innoverer mer","Innovasjon større verdi under KONKURRANSE; monopolister har mindre å vinne","Uavhengig av struktur","Kun staten innoverer"],
+      correct:1, src:"Lecture 12, slide 23",
+      expl:"Arrow (1962): Monopolisten har ALLEREDE profitt - hen 'erstatter' seg selv ved innovasjon. Konkurrerende firma har null profitt i utgangspunktet - innovasjon gir stor gevinst. Derfor mer insentiv i konkurranse."},
+    {type:"mc", q:"Hva legger 'Menaced monopolist'-modellen til?",
+      opts:["Monopolist er ubeskyttet","ENTRY-trussel; monopolist kan tape mye ved missed innovasjon","Kun patenter","Staten subsidierer"],
+      correct:1, src:"Lecture 12, slide 24",
+      expl:"Replacement Effect er statisk. Menaced monopolist legger til entry-dynamikk: lav barrierer, monopolist frykter ny entrant med innovasjonen. Gir MER insentiv til innovasjon - 'more to lose' fra manglende innovasjon."},
+    {type:"mc", q:"Schumpeter Mark I karakterisering?",
+      opts:["Stabile monopolister innoverer","Entreprenører/startups; creative destruction; drastisk innovasjon","Ingen innovasjon","Offentlig FoU"],
+      correct:1, src:"Lecture 12, slide 28",
+      expl:"Mark I (1912): Creative destruction. Entreprenører forstyrrer gjennom drastisk innovasjon som fortrenger eksisterende. Lav kumulativ kunnskap, høy opportunitet, lav approprierbarhet. Eksempel: Silicon Valley."},
+    {type:"mc", q:"Schumpeter Mark II karakterisering?",
+      opts:["Kun entreprenører","Store inkumbenter; creative accumulation; gradvis innovasjon","Ingen innovasjon","Alltid tap"],
+      correct:1, src:"Lecture 12, slide 28",
+      expl:"Mark II (1942): Creative accumulation. Store etablerte selskaper dominerer pga lager av kunnskap, FoU-historie, store ressurser. Høy kumulativitet, lav opportunitet, høy approprierbarhet. Eksempel: farma, halvledere."},
+    {type:"mc", q:"Teknologisk regime - hva skiller Mark I vs Mark II?",
+      opts:["Skatt","Kumulativitet, opportunitet, approprierbarhet","Geografisk plassering","Regulering"],
+      correct:1, src:"Lecture 12, slide 29",
+      expl:"Mark I: lav kumulativitet (bredende mønster, drastisk innovasjon), høy opportunitet, lav approprierbarhet (lett imitasjon).\nMark II: høy kumulativitet (dypnende, gradvis), lav opportunitet, høy approprierbarhet (vanskelig imitasjon)."},
+    {type:"mc", q:"Silicon Valley er klassisk eksempel på?",
+      opts:["Mark II","Mark I (mange entries/exits, creative destruction)","Ingen innovasjon","Kun statlig"],
+      correct:1, src:"Lecture 12, slide 30",
+      expl:"Silicon Valley: mange entries og exits, startup-økosystem. Drastisk innovasjon erstatter etablerte selskaper. Klassisk Mark I. Andre eksempler: Cambridge (UK) for farma, Dresden for halvledere, Hangzhou for fintech."},
+    {type:"mc", q:"'Drastisk' vs 'gradvis' innovasjon?",
+      opts:["Teknisk betydning","Drastisk ERSTATTER eksisterende; gradvis forbedrer","Juridisk","Regulatorisk"],
+      correct:1, src:"Lecture 12",
+      expl:"Drastisk: nytt produkt erstatter gamle (menaced monopolist taper pga replacement av egne produkter). Gradvis: nye produkter utfyller/forbedrer (monopolist har mer å tape fordi kan beholde markedsandel ved å innovere)."},
+    {type:"mc", q:"Under drastisk innovasjon + menaced monopolist, hvem har mest insentiv?",
+      opts:["Monopolisten (replacement)","Entrantene (mindre å tape)","Ingen","Staten"],
+      correct:1, src:"Lecture 12, slide 19",
+      expl:"Ved drastisk innovasjon fortrenger nye produkter gamle. Monopolisten 'erstatter seg selv' - replacement effect - mindre å vinne. Entrantene har null profitt å miste - mer å vinne. Mark I-dynamikk."},
+    {type:"mc", q:"Under gradvis innovasjon + menaced monopolist, hvem har mest insentiv?",
+      opts:["Entrantene","Monopolisten (mer å tape ved missed innovasjon)","Ingen","Staten"],
+      correct:1, src:"Lecture 12, slide 19",
+      expl:"Ved gradvis innovasjon beholder monopolisten markedsposisjonen hvis hen innoverer, men mister kundene hvis hen ikke gjør det. 'More to lose'. Mark II-dynamikk støtter stor bedrifts dominans."},
+    {type:"mc", q:"IKKE en typisk innovasjonsmåling?",
+      opts:["FoU-utgifter","Antall patenter","Nye produktlanseringer","Bedriftens navneskift"],
+      correct:3, src:"Lecture 12",
+      expl:"Typiske mål: FoU (input), patenter (output med kvalitetsjustering), nye produkter (kommersialisert output), prosessforbedringer. Navneskift er irrelevant - markedstiltak ikke innovasjon."},
+    {type:"mc", q:"Hva er 'process innovation' (i Replacement-modellen)?",
+      opts:["Nye produkter","Reduksjon av marginalkostnader","Markedsføring","Logistikk"],
+      correct:1, src:"Lecture 12, slide 20",
+      expl:"Process innovation (i modellen): reduserer MC fra c̄ til c. Gir variabel profitt vπ̄ (før) til vπ (etter, innovatør). Modell sammenligner reward under monopol vs konkurranse."},
+    {type:"mc", q:"Er Replacement Effect og Schumpeter Mark I komplementære?",
+      opts:["Motstridende","Komplementære: Mark I samler inn drastisk + menaced, Replacement statisk","Identiske","Uavhengige"],
+      correct:1, src:"Lecture 12, slide 28",
+      expl:"Replacement Effect er STATISK - sammenligner insentiv i monopol vs konkurranse i ett bilde. Mark I legger til DYNAMIKK - entreprenører fortrenger. Begge støtter at drastisk innovasjon er mer sannsynlig utenfor monopol."},
+    {type:"mc", q:"Viktigst praktisk implikasjon av Mark II?",
+      opts:["Må bryte opp store firmaer","Store bedrifter er viktige for innovasjon; antitrust må balansere","Kun startups matter","Ingen implikasjon"],
+      correct:1, src:"Lecture 12 + Lecture 15",
+      expl:"Mark II: store bedrifter driver innovasjon i noen teknologier. Dette har antitrust-implikasjoner - aggressivt å bryte opp kan skade innovasjon. Lecture 15 (antitrust) diskuterer hvordan konkurranseanalyse må balansere statisk vs dynamisk effektivitet."},
+    {type:"mc", q:"Hva betyr 'appropriability'?",
+      opts:["Passende bruk","Grad firmaet kan APPROPRIERE (beholde) fordelene av sin innovasjon - beskyttelse mot imitasjon","Juridisk status","Markedsandel"],
+      correct:1, src:"Lecture 12, slide 29",
+      expl:"Appropriability = hvor godt kan innovatoren beholde gevinsten? Høy = vanskelig imitasjon (patenter sterke, tacit knowledge). Lav = lett imitasjon (kopiert raskt). Mark II har HØY appropriability, Mark I LAV."},
+    {type:"text", q:"Forklar kort replacement effect og menaced monopolist. Når forventer hver modell mer innovasjon under konkurranse vs monopol?",
+      keywords:["replacement","menaced","competition","monopoly","gain","lose","incentive","drastic","gradual"],
+      src:"Lecture 12, slides 19-24",
+      expl:"**Replacement Effect (Arrow)**:\n• Monopolist erstatter seg selv ved innovasjon - mindre å vinne\n• Konkurrerende firma har null profitt - mer å vinne\n• Prediker: MER innovasjon i konkurranse\n\n**Menaced Monopolist**:\n• Entry-trussel; monopolist kan tape markedet om hen ikke innoverer\n• Ved DRASTISK innovasjon: monopolist mister markedet uansett, mindre insentiv (som Arrow) → entrants mest innovasjon\n• Ved GRADVIS innovasjon: 'more to lose'; monopolist innoverer for å beholde posisjon → monopolist mest innovasjon\n\nBegge gjelder, men teknologiens type avgjør hvilken passer best. Kobler til Schumpeter Mark I (drastisk) vs Mark II (gradvis)."},
+  ]
+},
+"13_Alliances": {
+  title: "Lecture 13: Interfirm Alliances",
+  questions: [
+    {type:"mc", q:"Forskjell strategisk allianse vs joint venture?",
+      opts:["Samme","JV skaper NY uavhengig organisasjon felles eid; allianse er samarbeid uten ny enhet","JV har ingen kontrakt","Allianse alltid juridisk bindende"],
+      correct:1, src:"Lecture 13, slide 22",
+      expl:"• Strategisk allianse: samarbeid, koordinering, deling uten ny enhet.\n• Joint venture: ny uavhengig organisasjon eies felles.\n\nBegge: samarbeid for spesifikt mål uten full fusjon."},
+    {type:"mc", q:"Hva er equity alliance?",
+      opts:["Uten eierskap","JV eller minoritetseierskap i partner","Full fusjon","Kontraktsavtale"],
+      correct:1, src:"Lecture 13, slide 11-14",
+      expl:"Equity alliance = involverer eierskapsutveksling. Eksempler: JV (felles eid ny enhet), minoritetsandel (Tencent kjøpte 5% i Tesla 2017). Non-equity: lisensiering, franchising, konsortier."},
+    {type:"mc", q:"Faktorer som fører til allianser/JV?",
+      opts:["Kun skatt","Impediments til kontrakter, relation-specific assets, komplementaritet, informasjon, transitorisk mulighet","Kun juridisk","Kun marked"],
+      correct:1, src:"Lecture 13, slide 25",
+      expl:"(1) Impediments til komprehensive kontrakter. (2) Relation-specific assets fra begge. (3) Komplementaritet av ressurser. (4) Informasjon/kunnskapsdeling. (5) Transitorisk samarbeidsmulighet."},
+    {type:"mc", q:"Typer av allianser?",
+      opts:["Kun horisontale","Horisontale (samme industri), Laterale (ulike), Vertikale (verdikjede)","Kun vertikale","Kun laterale"],
+      correct:1, src:"Lecture 13, slide 24",
+      expl:"• Horisontale: samme industri (konkurrenter i allianse).\n• Laterale: ulike industrier.\n• Vertikale: ulike stadier i samme verdikjede.\n\nAlle kan inngås som formelle eller uformelle avtaler."},
+    {type:"mc", q:"Hva er konsortium?",
+      opts:["Full fusjon","Midlertidig allianse av uavhengige org for spesifikt mål","Statlig byrå","Ett firma flere divisjoner"],
+      correct:1, src:"Lecture 13, slide 21",
+      expl:"Konsortium = midlertidig. Partene forblir juridisk separate men samarbeider via kontrakt. Eksempler: ITER (kjernefusjon EU/US/Russland/Kina/Japan/India), forskningskonsortier."},
+    {type:"mc", q:"Hva baserer allianser seg på (vs arm's length)?",
+      opts:["Strengere kontrakter","Tillit, gjensidighet, samarbeid, informasjonsdeling","Mindre interaksjon","Kortere horisont"],
+      correct:1, src:"Lecture 13, slide 24",
+      expl:"Allianser: TILLIT, gjensidighet, samarbeid, informasjonsdeling. Arm's length-kontrakter: formell, transaksjonsbasert, minimal informasjonsutveksling. Tvister: allianser forhandles, arm's length prosederes."},
+    {type:"mc", q:"Ulempe ved allianser?",
+      opts:["Alltid lønnsomt","Tap av kontroll over info, IP-problemer, agency, koordinering","Ingen","Eliminerer konkurranse"],
+      correct:1, src:"Lecture 13, slide 26",
+      expl:"Ulemper: (1) Tap av kontroll over info. (2) Intensiv kunnskapsdeling. (3) IP-beskyttelsesmekanismer kan være ineffektive. (4) Agency- og influence-kostnader. (5) Koordineringsvansker. (6) Ingen formelle beslutnings-/tvisteløsningsmekanismer."},
+    {type:"mc", q:"Hva er 'hostage theory' i allianser?",
+      opts:["Juridisk lovlig kidnapping","Mekanisme: hver part setter noe verdifullt på spill for å signalisere forpliktelse","Staten tar gissel","Uten kontrakt"],
+      correct:1, src:"Lecture 13, slide 42",
+      expl:"Hostage theory: reduserer opportunisme ved at hver part INVESTERER noe verdifullt som de ville tape ved defeksjon. Gissel = ikke fysisk, men en relation-specific investment. Skaper gjensidig sårbarhet og troverdighet."},
+    {type:"mc", q:"Hvorfor fungerer samarbeid i gjentatte relasjoner?",
+      opts:["Alltid","Verdsetter fremtiden og kan troverdig straffe defeksjon","Juridisk tvang","Regulering"],
+      correct:1, src:"Lecture 13, slide 42",
+      expl:"Game theory: i enkeltspill er defeksjon rasjonell (prisoner's dilemma). Men i gjentatte spill kan cooperation emerge og persist hvis: (1) Høy fremtidsverdsetting. (2) Troverdig straff ved defeksjon (f.eks. tit-for-tat)."},
+    {type:"mc", q:"Alliansestrategi for internasjonalisering?",
+      opts:["Alltid full etablering","Allianser fordeles informasjon, kunnskap og kontekstuell tilpasning","Alltid joint venture","Kun franchise"],
+      correct:1, src:"Lecture 13, slide 25",
+      expl:"Ved internasjonalisering: allianser gir lokal kunnskap, informasjon om kontekst, og tilpasning. Lokal partner vet regulering, kultur, nettverk - den innflyttede partner bidrar med teknologi/kapital. Klassisk win-win."},
+    {type:"mc", q:"Ikke-equity alliance?",
+      opts:["JV","Lisensiering, franchising, strategiske allianser (kontrakt, ikke eierskap)","Minoritetseierskap","Full fusjon"],
+      correct:1, src:"Lecture 13, slide 11",
+      expl:"Ikke-equity: kontraktsavtale uten eierskapsutveksling. Eksempler: lisensiering (IP-rett mot royalty), franchising (merkevare + modell), konsortier, strategiske allianser. Forpliktelsen er ressurser/ferdigheter, ikke kapital."},
+    {type:"mc", q:"Hva betyr transitorisk samarbeidsmulighet?",
+      opts:["Permanent","Kortsiktig mulighet (prosjekt, teknologivindu) som ikke rettferdiggjør full fusjon","Juridisk pålagt","Evigvarende"],
+      correct:1, src:"Lecture 13, slide 25",
+      expl:"Transitorisk: samarbeidet er TIDSBEGRENSET til en spesifikk mulighet - et prosjekt, en teknologirace, en markedsinngang. Full fusjon/integrasjon er overkill. Allianser/JV passer perfekt for slike diskrete mål."},
+    {type:"mc", q:"Joint Research and Development Act (1984) tillater?",
+      opts:["Fusjoner","Domestiske/utenlandske firmaer delta i felles grunnforskning uten antitrust-frykt","Karteller","Alle samarbeid"],
+      correct:1, src:"Lecture 13, slide 21",
+      expl:"USAs JRDA tillater forskningskonsortier uten antitrust-skrekk - anerkjent at kostbar R&D ofte overstiger ett firmas kapasitet. Tilsvarende i EU og Japan. Begrunnelse: dynamisk effektivitet (innovasjon) vs statisk konkurranseeffektivitet."},
+    {type:"text", q:"Hvorfor velger firmaer allianser/JV fremfor enten marked eller full integrasjon?",
+      keywords:["intermediate","flexibility","contracts","relation-specific","both parties","trust","learning"],
+      src:"Lecture 13",
+      expl:"**Intermediate forms** fyller gap mellom marked (arm's length) og hierarki (integrasjon):\n\n**Grunner til allianser/JV**:\n1. **Impediments til komplette kontrakter**: Marked fungerer ikke godt, men full fusjon er overkill.\n2. **Relation-specific assets FRA BEGGE SIDER**: Begge investerer, skaper gjensidig avhengighet (hostage).\n3. **Komplementaritet**: Hver part har unike ressurser - ingen kan gjøre det alene.\n4. **Info/kunnskapsdeling**: Samarbeid muliggjør læring.\n5. **Transitorisk mulighet**: Kortsiktig prosjekt rettferdiggjør ikke permanent integrasjon.\n\nFordel: fleksibilitet + samarbeid uten å gi opp autonomi. Ulempe: koordineringskostnader og IP-risiko."},
+    {type:"mc", q:"Eksempel på horisontal allianse?",
+      opts:["Bilselskap + leverandør","To flyselskap i Star Alliance","Produsent + distributør","Bank + teknologiselskap"],
+      correct:1, src:"Lecture 13, slide 24",
+      expl:"Star Alliance = flyselskaper i SAMME industri samarbeider om ruter, miles, lounges. Horisontal. Bilselskap+leverandør=vertikal. Produsent+distributør=vertikal. Bank+tech=lateral (ulike industrier)."},
+  ]
+},
+"14_Regulation": {
+  title: "Lecture 14: Natural Monopoly Regulation & SOEs",
+  questions: [
+    {type:"mc", q:"To hovedrespons på naturlig monopol-markedsvikt?",
+      opts:["Antitrust, miljøpolitikk","SOEs (State-Owned Enterprises) og monopolregulering","Ignorere, skatt","Fusjoner, karteller"],
+      correct:1, src:"Lecture 14",
+      expl:"Naturlig monopol → staten intervenerer via:\n(1) **SOEs**: staten eier firmaet direkte.\n(2) **Monopolregulering**: private firmaet, regulert pris/investering.\n\nAntitrust adresserer misbruk av markedsmakt; miljøpolitikk eksternaliteter."},
+    {type:"mc", q:"Natural monopoly model med single produkt?",
+      opts:["TC = cQ²","TC = F + cQ; AC = F/Q + c; MC = c","TC = F/Q","TC = Q"],
+      correct:1, src:"Lecture 14",
+      expl:"Forenklet modell: TC = F + cQ (faste + variable).\nAC = F/Q + c (synker med Q → skaleøkonomier).\nMC = c (konstant).\n\nSkaleøkonomier garanterer cost subadditivity for ett-produktfall."},
+    {type:"mc", q:"Second-best scenario ved regulering?",
+      opts:["Pris = MC","Pris = AC (break-even, gir Q mellom monopol og p.k.)","Pris = monopolpris","Ingen pris"],
+      correct:1, src:"Lecture 14",
+      expl:"**Second-best**: regulator maksimerer velferd med π ≥ 0.\n• Løsning: p̂ = AC(Q̂) der etterspørsel møter AC\n• Q* > Q̂ > Q_MON; p* < p̂ < p_MON\n\nKan ikke få first-best (p=MC) fordi da får firmaet tap (p<AC). Break-even-betingelsen bestemmer."},
+    {type:"mc", q:"First-best med subsidie?",
+      opts:["T = p","T = MC, subsidie S = F","T = 0","T = AC"],
+      correct:1, src:"Lecture 14",
+      expl:"**First-best med subsidie**:\n• Sett unitary rate T = MC\n• Subsidie S = F (dekker faste kostnader)\n• Firm break-even: R = T·Q + S = MC·Q + F\n\nIdeell effektivitet, men problemer: politisk bruk av subsidier, soft budget constraint, svak produktivitetsinsentiv."},
+    {type:"mc", q:"Two-part tariff?",
+      opts:["Kun volum","Unitary rate T=MC + årlig access fee A","Kun access","Kun subsidie"],
+      correct:1, src:"Lecture 14",
+      expl:"**Two-part tariff** (C):\n• T = MC (volumbasert rate)\n• A = access fee (årlig)\n  - N kunder med høyere inntekt: A = F/N\n  - Lavere inntekt: A = 0\n• Revenues (T·Q + N·A) = TC (MC·Q + F)\n\nFordel: break-even uten subsidie, mer transparent. Bare mulig for tilkoplede brukere (vann, strøm)."},
+    {type:"mc", q:"Hva er 'tariff components'?",
+      opts:["Kun pris","T (unitary rate), S (subsidie), A (access fee)","Kun skatt","Kun lønn"],
+      correct:1, src:"Lecture 14",
+      expl:"Regulerte tariffer kan ha 3 komponenter:\n• T = unitary usage rate (€/kWh, €/m³)\n• S = subsidie/statlig transfer (for å dekke faste)\n• A = access fixed fee (€/kunde·år)\n\nKombinasjoner gir ulike regulerings-scenarier (first-best w/ subsidie, two-part, osv.)."},
+    {type:"mc", q:"Hva er 'patronage' i SOE-kontekst?",
+      opts:["Kundeservice","Politisk bruk av SOE til egen gevinst (jobbtildeling, favoriserte kontrakter)","Regulering","Uavhengighet"],
+      correct:1, src:"Lecture 14",
+      expl:"Patronage = politikere bruker SOEs for politisk vinning (gi jobber, kontrakter, favorer til støttespillere). Dette er en kjent svakhet ved statlig eierskap. Privatisering + regulering var svar i mange land fra 1980-tallet."},
+    {type:"mc", q:"Trend for SOEs i høyinntektsøkonomier?",
+      opts:["Kontinuerlig vekst","Privatisering + regulering fra 1980-tallet, men 'recent awakening' pga kriser","Fullstendig forsvunnet","Alltid stabilt"],
+      correct:1, src:"Lecture 14",
+      expl:"Historisk: 1980-2030-trend. Stor privatiseringsbølge (1980-2000s) pga patronage/ineffektivitet. Siden 2020 'awakening': pandemi, krig, geopolitiske kriser har gjort statlig eierskap mer attraktivt i enkelte sektorer."},
+    {type:"mc", q:"Hva er 'soft budget constraint'?",
+      opts:["Strikt budsjett","Firma kan regne med at tap dekkes av staten; svekker kostnadsdisiplin","Ingen budsjett","Eksternt revidert"],
+      correct:1, src:"Lecture 14",
+      expl:"Soft budget constraint: firmaet (typisk SOE eller subsidiert) VET at staten dekker tap. Dette reduserer insentiv til kostnadskontroll - jo verre økonomi, jo mer subsidie. Klassisk kritikk av SOE og first-best med fast subsidie."},
+    {type:"mc", q:"Agency-problemer i naturlig monopoli?",
+      opts:["Forsvinner med regulering","Eksisterer fortsatt (skjult handling, asymmetrisk info)","Kun privat","Irrelevant"],
+      correct:1, src:"Lecture 14",
+      expl:"Agency-problemer vedvarer under alle regulerings-/eierskapsformer:\n• SOE: politikere (prinsipal) vs management (agent)\n• Regulert privat: regulator vs management\n\nAlltid vanskelig å overvåke faktisk innsats/effektivitet. Dette er en del av begrunnelsen for å innføre insentivbaserte reguleringer."},
+    {type:"mc", q:"Hvorfor kan regulator alternativet til SOE?",
+      opts:["Kan ikke","Regulering gir privat effektivitet + offentlig kontroll over pris; unngår patronage","Regulering billigere","Lovforbud"],
+      correct:1, src:"Lecture 14",
+      expl:"Regulering av private monopolist: beholder private insentiver til effektivitet (profittmaksimering innenfor rammer), men kontrollerer pris og tilgang. Kan unngå politisk misbruk som rammer SOEs. Men regulator kan selv rammes av regulatory capture."},
+    {type:"mc", q:"Eksempel sektor med two-part tariff?",
+      opts:["Ingen","Vann, strøm, gass, telekom (tilkoblede brukere)","Kafeer","Restauranter"],
+      correct:1, src:"Lecture 14",
+      expl:"Two-part tariff krever tilkoblede brukere (identifiserbare kunder med permanent tilkobling). Eksempler: vann, strøm, gass, telekom, fiber. Fungerer ikke for åpne markeder hvor alle kan handle."},
+    {type:"mc", q:"Hvorfor er subsidier problematiske?",
+      opts:["Ikke problematiske","Politisk bruk, soft budget, svake produktivitetsinsentiver","Alltid ulovlige","For små beløp"],
+      correct:1, src:"Lecture 14",
+      expl:"Subsidieproblemer: (1) Politisk bruk i forhandlinger. (2) Soft budget constraint - firmaet regner med subsidie. (3) Svekker innsatsen for effektivitet. Eksempel: bypublic transport, regionale jernbaner."},
+    {type:"text", q:"Forklar trade-off mellom first-best (T=MC+S) og second-best (p=AC) regulering.",
+      keywords:["first-best","second-best","subsidy","break-even","MC","AC","efficiency","deadweight"],
+      src:"Lecture 14",
+      expl:"**First-best** (T=MC + subsidie S=F):\n+ Allokativ effektivitet (p=MC, ingen DWL)\n+ Høyest mulig sosialt velferd\n- Krever offentlig subsidie (skatter)\n- Soft budget constraint, svake insentiver\n- Politisk misbruk\n\n**Second-best** (p=AC, break-even):\n+ Selvfinansierende (ingen skatter)\n+ Ingen subsidiemisbruk\n+ Bedre insentiver til effektivitet\n- Allokativ ineffektivitet (p>MC, liten DWL)\n- Q < Q_optimal\n\n**Two-part tariff** kan kombinere fordeler: T=MC (optimal for volum) + A (dekker faste uten skatter). Men krever tilkoblede brukere."},
+    {type:"mc", q:"Hvilken markedssvikt matcher med SOE/regulering?",
+      opts:["Abusive market power","Naturlig monopol","Miljøeksternaliteter","Vekst-hindringer"],
+      correct:1, src:"Lecture 14",
+      expl:"• Abusive market power → antitrust\n• NATURLIG MONOPOL → SOE/regulering\n• Miljøeksternaliteter → miljøpolitikk\n• Vekst-hindringer → industriell/innovasjonspolitikk"},
+  ]
+},
+"15_Antitrust": {
+  title: "Lecture 15: Antitrust Policy",
+  questions: [
+    {type:"mc", q:"Hva er antitrust-politikk?",
+      opts:["Regulering av priser i alle markeder","Regler/handlinger staten bruker for å BESKYTTE KONKURRANSE","Skattepolitikk","Miljøpolitikk"],
+      correct:1, src:"Lecture 15, slide 3",
+      expl:"Antitrust (konkurransepolitikk) = regler og handlinger av staten for å beskytte konkurransen i markeder. Tre hovedområder: (1) Misbruk av dominans. (2) Konkurransebegrensende avtaler/karteller. (3) Fusjonskontroll."},
+    {type:"mc", q:"Tre hovedområder i antitrust?",
+      opts:["Skatt, regulering, subsidier","Abuse of dominance, anticompetitive agreements (karteller), merger control","Miljø, sosial, økonomi","Lønn, jobb, priser"],
+      correct:1, src:"Lecture 15",
+      expl:"(1) Abuse of dominant position (forhindre misbruk). (2) Anticompetitive agreements/cartels (prisfiksering, kvotedeling). (3) Merger control (godkjenne/avvise fusjoner). Hver har egne analytiske rammeverk."},
+    {type:"mc", q:"Hvilken kartellform er NULL-TOLERANSE?",
+      opts:["Ingen","Hardcore cartels: price fixing, output restriction, market allocation, bid rigging","Alle samarbeid","Kun offentlig"],
+      correct:1, src:"Lecture 15",
+      expl:"Hardcore karteller er per se ulovlige:\n• Price fixing\n• Output restriction\n• Market allocation (geografisk deling)\n• Bid rigging (kollusjon i anbud)\n\nIngen effektivitetsbegrunnelse aksepteres. Stor bøter, leniency-programmer for whistleblowers."},
+    {type:"mc", q:"EU-sonerre for post-merger HHI?",
+      opts:["Alle tillatt","Grønn <1500; Gul 1500-2500; Rød >2500 (med ΔHHI>200: forbudt)","Strengere","Ingen regler"],
+      correct:1, src:"Lecture 15, slide 40",
+      expl:"**EU fusjonsretningslinjer (post-merger HHI)**:\n• Grønn: HHI < 1500 → godkjent uten videre undersøkelse\n• Gul: 1500 ≤ HHI < 2500 → videre undersøkelse hvis ΔHHI ≥ 250\n• Rød: HHI > 2500 og ΔHHI > 200 → forbudt uten videre undersøkelse\n\nBasert på Nocke & Whinston (2020)."},
+    {type:"mc", q:"Hva er 'leniency program'?",
+      opts:["Fengselstraff","Redusert bot for kartellmedlem som tyster først - 100% immunity for første","Auto-tilgivelse","Statlig subsidie"],
+      correct:1, src:"Lecture 15, slide 71",
+      expl:"Leniency program = insentiv for kartellmedlem å samarbeide:\n• Første som avslører kartellet: 100% immunitet\n• Senere samarbeid: f.eks. 30% reduksjon\n\nSmart card chips-saken: Infineon (DE) 0% reduksjon, Philips 0%, Samsung 30%, Renesas 100% (først).\nDestabiliserer karteller ved å skape 'prisoner's dilemma'."},
+    {type:"mc", q:"Eksempel på kartell-sak fra pensum?",
+      opts:["Google","Smart card chips (2014, EC): €138M bot","Microsoft","Intel"],
+      correct:1, src:"Lecture 15, slide 69-71",
+      expl:"Smart card chips-kartell (EU Commission 2014):\n• Produsenter av chips til SIM, kredittkort, pay-TV-kort\n• Europeisk økonomisk område\n• Total bot: €138M\n• Renesas (Hitachi+Mitsubishi): 100% leniency\n• Samsung: 30% reduksjon\n• Infineon, Philips: full bot"},
+    {type:"mc", q:"Hva er 'relevant market' i antitrust?",
+      opts:["Populært marked","Marked definert ved produktsubstitusjon og geografi for antitrust-analyse","Enhver markedsdefinisjon","Regulerte markeder"],
+      correct:1, src:"Lecture 15",
+      expl:"Relevant market = analytisk ramme for antitrust. Definert av:\n• PRODUKT-substitusjon (hvilke produkter er rimelig erstatning?)\n• GEOGRAFISK markedssone (hvor kan kunder kjøpe fra?)\n\nBredere definisjon = mindre konsentrasjon og markedsmakt fremstår. Snevrere = mer. Derfor viktig kamparena i saker."},
+    {type:"mc", q:"Hvilken av disse er IKKE hardcore kartellpraksis?",
+      opts:["Price fixing","Output restriction","Produktdifferensiering","Bid rigging"],
+      correct:2, src:"Lecture 15",
+      expl:"Produktdifferensiering er normal konkurransestrategi, ikke kartellsamarbeid. Hardcore karteller: prisfiksering, kvantumsbegrensning, markedsdeling, bid rigging - alle per se ulovlige."},
+    {type:"mc", q:"Hva er 'abuse of dominance'?",
+      opts:["Ha stor markedsandel","Ekskluderende eller utnyttende atferd av DOMINERENDE firma","All konkurranse","Kun fusjoner"],
+      correct:1, src:"Lecture 15, slide 15",
+      expl:"To krav:\n(1) DOMINANT posisjon (typisk > 40% markedsandel pluss andre faktorer)\n(2) MISBRUK: ekskluderende (rovprising, tying, refusal to deal) eller utnyttende (ekstreme priser, diskriminering)\n\nDominans alene er IKKE ulovlig - kun misbruket er det."},
+    {type:"mc", q:"Hva er 'vertical foreclosure'?",
+      opts:["Blokkade av oppstrøms/nedstrøms konkurrenter fra å få tilgang","Blokkade av horisontale konkurrenter","Full fusjon","Lovforbud"],
+      correct:0, src:"Lecture 15",
+      expl:"Vertikal foreclosure: dominant firma i ett ledd bruker sin makt for å blokkere konkurrenter i et annet ledd. Eksempler: oppstrøms firma nekter å levere til konkurrenter av deres nedstrøms datterselskap. Digitalt: Google som Search + kart + advertising - favorisering av egne tjenester."},
+    {type:"mc", q:"Hva er 'predatory pricing'?",
+      opts:["Lav kvalitet","Priser under kostnad for å drive ut konkurrenter, deretter høyere priser","Normal priskonkurranse","Billigsalg"],
+      correct:1, src:"Lecture 15",
+      expl:"Predatory pricing = sette priser under kostnader (typisk under AVC) midlertidig for å drive ut konkurrenter. Deretter heves prisene for å inhøste monopolgevinst. Skiller seg fra normal priskonkurranse ved at intensjonen er eliminering, ikke lønnsomhet."},
+    {type:"mc", q:"Hva er 'killer acquisition'?",
+      opts:["Fiendtlig overtakelse","Stor aktør kjøper potensiell fremtidig konkurrent for å ELIMINERE trusselen","Lovlig fusjon","Joint venture"],
+      correct:1, src:"Lecture 15",
+      expl:"Killer acquisition: dominant firma kjøper startup/mindre firma som kunne utviklet seg til trussel - spesielt i digitale markeder (Facebook kjøpte Instagram/WhatsApp, Google kjøpte YouTube). Antitrust-bekymring fordi skaden er fremtidig og vanskelig å vurdere."},
+    {type:"mc", q:"Hva er 'algorithmic collusion'?",
+      opts:["Menneskelig kartell","Algoritmer (AI) som lærer å koordinere priser uten eksplisitt avtale","Kun offentlig","Lovlig reklame"],
+      correct:1, src:"Lecture 15",
+      expl:"Algorithmic collusion: prisingsalgoritmer som lærer seg å samordne priser UTEN eksplisitt avtale mellom selskaper. Kan oppstå i markeder med få aktører og transparente priser. Juridisk utfordring: er det 'avtale' om det skjer via autonome algoritmer? Aktiv forskningsområde."},
+    {type:"mc", q:"Hvilke teoretiske paradigmer støtter antitrust?",
+      opts:["Kun ett","Structure-Conduct-Performance, Efficiency Hypotheses (Chicago), Strategic Interdependence, Contestable Markets, Innovation, Digital","Ingen","Kun Chicago"],
+      correct:1, src:"Lecture 15, slide 61",
+      expl:"Ulike paradigmer implicerer ulike antitrust-roller:\n• SCP: kontroll av struktur\n• Chicago/Efficiency: minimal rolle\n• Strategisk interdep.: adressere makt-strategier\n• Contestable: åpne entry/exit\n• Innovation: balansere statisk og dynamisk effekt\n• Digital: transisjon, nye tilnærminger"},
+    {type:"text", q:"Forklar kort EU-sone-systemet for merger-review (grønn/gul/rød).",
+      keywords:["HHI","post-merger","delta","green","yellow","red","1500","2500","200","investigation"],
+      src:"Lecture 15, slide 40",
+      expl:"**EU-sone-system (post-merger HHI + ΔHHI)**:\n\n**Grønn sone** (auto-godkjent):\n• HHI < 1000, ELLER\n• 1000 ≤ HHI < 2000 OG ΔHHI < 250, ELLER\n• ΔHHI < 150\n• Bekymringer svært usannsynlige\n\n**Gul sone** (videre undersøkelse):\n• Mellom grønn og rød\n• Fusjon vurderes nærmere\n\n**Rød sone** (forbudt uten videre undersøkelse):\n• HHI > 2500 OG ΔHHI > 200\n\nAlternativ formulering: post-merger HHI < 1500 eller ΔHHI < 100 → grønn.\n\nSystemet balanserer praktisk effektivitet (mange fusjoner har ingen konkurranseproblemer) og vern mot anti-competitive fusjoner."},
+  ]
+},
+};
+
+// ============================================================
+// APPLICATION LOGIC
+// ============================================================
+
+const app = document.getElementById('app');
+let state = {
+  screen: 'home', // home, quiz, results
+  topic: null,    // "all" or topic key
+  questions: [],  // selected questions for current quiz
+  current: 0,     // current question index
+  answers: []     // user's answers
+};
+
+// Shuffle array (Fisher-Yates)
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Shuffle options but remember correct index
+function shuffleOptions(q) {
+  if (q.type !== 'mc') return q;
+  const indexed = q.opts.map((opt, i) => ({opt, isCorrect: i === q.correct}));
+  const shuffled = shuffle(indexed);
+  return {
+    ...q,
+    opts: shuffled.map(x => x.opt),
+    correct: shuffled.findIndex(x => x.isCorrect)
+  };
+}
+
+function pickQuestions(topicKey, n) {
+  const qs = QUESTIONS[topicKey].questions;
+  const shuffled = shuffle(qs);
+  const selected = shuffled.slice(0, Math.min(n, qs.length));
+  return selected.map(q => ({...shuffleOptions(q), _topicKey: topicKey, _topicTitle: QUESTIONS[topicKey].title}));
+}
+
+function startQuiz(topicKey) {
+  if (topicKey === 'all') {
+    // 5 from each topic, shuffled
+    let all = [];
+    Object.keys(QUESTIONS).forEach(k => {
+      all = all.concat(pickQuestions(k, 5));
+    });
+    state.questions = shuffle(all);
+    state.topic = 'all';
+  } else {
+    state.questions = pickQuestions(topicKey, 15);
+    state.topic = topicKey;
+  }
+  state.current = 0;
+  state.answers = state.questions.map(() => ({submitted: false, answer: null, textValue: ''}));
+  state.screen = 'quiz';
+  render();
+}
+
+function renderHome() {
+  let html = `
+    <h1>BIE Quiz</h1>
+    <p class="subtitle">Business and Industrial Economics - Velg quiz-type</p>
+    <button class="topic-btn all" onclick="startQuiz('all')">
+      🎯 Samlet quiz (5 spørsmål fra hver forelesning - totalt ${Object.keys(QUESTIONS).length * 5} spørsmål)
+    </button>
+    <h2 style="margin-top:25px;">Eller velg en spesifikk forelesning (15 spørsmål):</h2>
+  `;
+  Object.keys(QUESTIONS).forEach(k => {
+    const topic = QUESTIONS[k];
+    html += `<button class="topic-btn" onclick="startQuiz('${k}')">${topic.title} <span style="color:#666;font-size:13px;">(${topic.questions.length} tilgjengelige)</span></button>`;
+  });
+  app.innerHTML = html;
+}
+
+function renderQuiz() {
+  const q = state.questions[state.current];
+  const ans = state.answers[state.current];
+  const total = state.questions.length;
+  const progress = ((state.current + 1) / total) * 100;
+
+  let typeBadge = '';
+  if (q.type === 'calc') typeBadge = '<span class="q-type-badge calc">REGNING</span>';
+  else if (q.type === 'text') typeBadge = '<span class="q-type-badge text">TEKSTSVAR</span>';
+  else typeBadge = '<span class="q-type-badge">FLERVALG</span>';
+
+  let html = `
+    <button class="back-btn" onclick="confirmHome()">← Tilbake til meny</button>
+    <div class="progress"><div class="progress-bar" style="width:${progress}%"></div></div>
+    <div class="question-box">
+      <div class="q-header">
+        <div>
+          <span class="q-num">Spørsmål ${state.current + 1} av ${total}</span>
+          ${typeBadge}
+        </div>
+        <span class="q-topic">${q._topicTitle.split(':')[0]}</span>
+      </div>
+      <div class="q-text">${escapeHtml(q.q)}</div>
+  `;
+
+  if (q.type === 'mc') {
+    html += '<div class="options">';
+    q.opts.forEach((opt, i) => {
+      let cls = 'option';
+      if (ans.submitted) {
+        if (i === q.correct) cls += ' correct-reveal';
+        if (ans.answer === i && i !== q.correct) cls += ' wrong';
+        if (ans.answer === i && i === q.correct) cls += ' correct';
+      } else if (ans.answer === i) {
+        cls += ' selected';
+      }
+      html += `<div class="${cls}" onclick="selectOption(${i})">${String.fromCharCode(65+i)}. ${escapeHtml(opt)}</div>`;
+    });
+    html += '</div>';
+  } else {
+    // text or calc - textarea
+    const guidance = q.type === 'calc'
+      ? 'Vis steg-for-steg: formler → innsetting → beregning → fasit.'
+      : 'Skriv et kort tekstsvar. Du får detaljert forklaring etterpå.';
+    html += `<div class="text-guidance">💡 ${guidance}</div>`;
+    html += `<textarea id="textAns" onchange="saveText(this.value)" ${ans.submitted ? 'disabled' : ''} placeholder="Skriv svaret ditt her...">${escapeHtml(ans.textValue || '')}</textarea>`;
+  }
+
+  // Feedback after submit
+  if (ans.submitted) {
+    if (q.type === 'mc') {
+      const isCorrect = ans.answer === q.correct;
+      html += `<div class="feedback ${isCorrect ? 'correct' : 'wrong'}">
+        <span class="feedback-label">${isCorrect ? '✅ Riktig!' : '❌ Feil. Riktig svar: ' + String.fromCharCode(65+q.correct)}</span>
+        ${escapeHtml(q.expl).replace(/\n/g, '<br>')}
+        <div class="source">Kilde: ${escapeHtml(q.src)}</div>
+      </div>`;
+    } else {
+      html += `<div class="feedback text-answer">
+        <span class="feedback-label">📝 Fasit / Modellsvar:</span>
+        ${escapeHtml(q.expl).replace(/\n/g, '<br>')}
+        <div class="source">Kilde: ${escapeHtml(q.src)}</div>
+      </div>`;
+    }
+  }
+
+  // Submit button (if not submitted)
+  if (!ans.submitted) {
+    const canSubmit = q.type === 'mc' ? ans.answer !== null : (ans.textValue && ans.textValue.trim().length > 0);
+    html += `<button class="btn-submit" onclick="submitAnswer()" ${canSubmit ? '' : 'disabled'}>Send inn svar</button>`;
+  }
+
+  html += '</div>'; // question-box
+
+  // Navigation
+  html += '<div class="nav">';
+  html += `<button class="btn-secondary" onclick="prev()" ${state.current === 0 ? 'disabled' : ''}>← Forrige</button>`;
+  if (state.current < total - 1) {
+    html += `<button class="btn-primary" onclick="next()">Neste →</button>`;
+  } else {
+    // Last question - show finish button
+    const allSubmitted = state.answers.every(a => a.submitted);
+    html += `<button class="btn-finish" onclick="finishQuiz()" ${allSubmitted ? '' : ''}>🏁 Fullfør quiz</button>`;
+  }
+  html += '</div>';
+
+  app.innerHTML = html;
+}
+
+function renderResults() {
+  // Calculate score
+  let mcCorrect = 0, mcTotal = 0, textCount = 0;
+  state.answers.forEach((a, i) => {
+    const q = state.questions[i];
+    if (q.type === 'mc') {
+      mcTotal++;
+      if (a.answer === q.correct) mcCorrect++;
+    } else {
+      textCount++;
+    }
+  });
+
+  const scorePercent = mcTotal > 0 ? Math.round((mcCorrect / mcTotal) * 100) : 0;
+
+  let html = `
+    <h1>🏁 Quiz ferdig!</h1>
+    <div class="score-box">
+      <h2>Din score</h2>
+      <div class="score-big">${mcCorrect} / ${mcTotal}</div>
+      <div style="font-size:20px;">${scorePercent}% riktig på flervalg</div>
+      ${textCount > 0 ? `<div style="margin-top:15px;font-size:14px;opacity:0.9;">+ ${textCount} tekstsvar (vurder selv mot fasiten)</div>` : ''}
+    </div>
+    <h2>Gjennomgang av alle spørsmål:</h2>
+  `;
+
+  state.questions.forEach((q, i) => {
+    const a = state.answers[i];
+    let cls = 'review-item ';
+    let status = '';
+    if (q.type === 'mc') {
+      if (a.answer === q.correct) { cls += 'correct-r'; status = '✅ Riktig'; }
+      else { cls += 'wrong-r'; status = '❌ Feil'; }
+    } else {
+      cls += 'text-r'; status = '📝 Tekstsvar';
+    }
+    html += `<div class="${cls}">
+      <div style="font-size:13px;color:#666;margin-bottom:5px;">${escapeHtml(q._topicTitle)} • ${status}</div>
+      <div style="font-weight:500;margin-bottom:8px;">${i+1}. ${escapeHtml(q.q).substring(0, 120)}${q.q.length > 120 ? '...' : ''}</div>`;
+    if (q.type === 'mc') {
+      html += `<div style="font-size:13px;">Ditt svar: <b>${a.answer !== null ? String.fromCharCode(65+a.answer) : '(ikke besvart)'}</b> | Riktig: <b>${String.fromCharCode(65+q.correct)}</b></div>`;
+    }
+    html += '</div>';
+  });
+
+  html += `<div class="nav"><button class="btn-primary" onclick="goHome()">🔄 Ny quiz</button></div>`;
+  app.innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+function selectOption(i) {
+  if (state.answers[state.current].submitted) return;
+  state.answers[state.current].answer = i;
+  render();
+}
+
+function saveText(val) {
+  state.answers[state.current].textValue = val;
+  // update submit button state
+  const btn = document.querySelector('.btn-submit');
+  if (btn) btn.disabled = !val || !val.trim();
+}
+
+function submitAnswer() {
+  const q = state.questions[state.current];
+  const a = state.answers[state.current];
+  if (q.type !== 'mc') {
+    // save current textarea value
+    const ta = document.getElementById('textAns');
+    if (ta) a.textValue = ta.value;
+    if (!a.textValue || !a.textValue.trim()) return;
+  } else {
+    if (a.answer === null) return;
+  }
+  a.submitted = true;
+  render();
+}
+
+function next() {
+  if (state.current < state.questions.length - 1) {
+    state.current++;
+    render();
+  }
+}
+
+function prev() {
+  if (state.current > 0) {
+    state.current--;
+    render();
+  }
+}
+
+function finishQuiz() {
+  state.screen = 'results';
+  render();
+}
+
+function goHome() {
+  state.screen = 'home';
+  state.topic = null;
+  state.questions = [];
+  state.current = 0;
+  state.answers = [];
+  render();
+}
+
+function confirmHome() {
+  if (confirm('Er du sikker? Fremgangen din vil gå tapt.')) goHome();
+}
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function render() {
+  if (state.screen === 'home') renderHome();
+  else if (state.screen === 'quiz') renderQuiz();
+  else if (state.screen === 'results') renderResults();
+}
+
+render();
+</script>
+</body>
+</html>
