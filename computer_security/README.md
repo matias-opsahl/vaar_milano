@@ -1,2 +1,0 @@
-# Claude
-Computer Security
